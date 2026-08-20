@@ -1,0 +1,6 @@
+@TribeWallet_HostAddress = http://localhost:5049
+
+GET {{TribeWallet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
