@@ -1,0 +1,21 @@
+## Linux & Arch Specific Files
+.DS_Store
+.directory
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+## Arch Package Management & Builds (if you build local tools)
+*.pkg.tar.zst
+*.pkg.tar.xz
+/pkg/
+/src/
+
+## Common Linux Editors
+*~
+.#*
+.\#*
+
+## Local environment / toolchains (e.g., if using Docker/Podman locally)
+.env.local
+.env.*.local
