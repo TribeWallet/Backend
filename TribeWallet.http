@@ -1,5 +1,12 @@
-@TribeWallet_HostAddress = http://localhost:5049
+# O host vem do .env na raiz do repositório (TRIBEWALLET_HOST_ADDRESS).
+# Se o seu cliente HTTP não resolver {{$dotenv}}, troque a linha abaixo pelo valor literal.
+@TribeWallet_HostAddress = {{$dotenv TRIBEWALLET_HOST_ADDRESS}}
 
+### Estado da API e da conexão com o banco
+GET {{TribeWallet_HostAddress}}/health
+Accept: application/json
+
+### Exemplo do template
 GET {{TribeWallet_HostAddress}}/weatherforecast/
 Accept: application/json
 
