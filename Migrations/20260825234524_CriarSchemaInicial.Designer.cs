@@ -12,8 +12,8 @@ using TribeWallet.Data;
 namespace TribeWallet.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260825233608_AdicionarTokenExterno")]
-    partial class AdicionarTokenExterno
+    [Migration("20260825234524_CriarSchemaInicial")]
+    partial class CriarSchemaInicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
