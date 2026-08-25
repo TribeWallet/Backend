@@ -18,4 +18,13 @@ public class UsuarioService
     {
         return _repository.GetAll();
     }
+
+    public Usuario Create(Usuario usuario)
+    {
+        int usuarioId = new Random().Next(1, 100);
+
+        usuario.UsuarioId = usuarioId;
+        
+        return usuario;
+    }
 }
