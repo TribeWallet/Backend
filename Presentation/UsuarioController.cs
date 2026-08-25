@@ -1,14 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
+using TribeWallet.Application;
 
 namespace TribeWallet.Presentation;
-[Route("api/user")]
+[Route("api/users")]
 [ApiController]
 public class UsuarioController: ControllerBase
 {
+    private readonly UsuarioService _service;
+    public UsuarioController(UsuarioService service)
+    {
+        _service = service;
+    }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok("Hello World!");
+        _service.GetAll();
+        return Ok();
     }
 }
