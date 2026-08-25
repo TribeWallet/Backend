@@ -1,4 +1,5 @@
 using TribeWallet.Application;
+using TribeWallet.Application;
 using TribeWallet.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);

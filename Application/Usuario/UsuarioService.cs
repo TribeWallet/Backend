@@ -2,6 +2,9 @@ using TribeWallet.Domain;
 
 namespace TribeWallet.Application;
 
+using TribeWallet.Infrastructure;
+using Domain;
+
 public class UsuarioService
 {
     private readonly IUsuarioRepository _repository;
@@ -25,6 +28,12 @@ public class UsuarioService
 
         usuario.UsuarioId = usuarioId;
         
+        return usuario;
+    }
+
+    public Usuario Login(LoginDTO loginDto)
+    {
+        Usuario usuario = _repository.Login(loginDto);
         return usuario;
     }
 }

@@ -29,4 +29,11 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
     {
         throw new NotImplementedException();
     }
+
+    public Usuario Login(LoginDTO loginDto)
+    {
+        //logica de login
+
+        return GetById(1);
+    }
 }

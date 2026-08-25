@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
+using TribeWallet.Application;
 using TribeWallet.Domain;
 
 namespace TribeWallet.Presentation;
@@ -21,33 +22,53 @@ public class UsuarioController: ControllerBase
         return Ok();
     }
 
-    [HttpPost]
-    public IActionResult Add(CreateUsuarioDTO createUsuarioDto)
+    [HttpGet("{usuarioId}")]
+    public IActionResult GetById(int usuarioId)
     {
-        /*
-        Usuario usuario = new Usuario(
-        {
-            Nome = createUsuarioDto.Nome,
-            Sobrenome = createUsuarioDto.Sobrenome,
-            Email = createUsuarioDto.Email,
-            Username = createUsuarioDto.Username,
-            HashSenha = createUsuarioDto.Senha
-        });
-         */
+        var usuario = _service.GetById(usuarioId);
+        var returnDto = new ReturnUsuarioDTO(
+            usuarioId: usuario.UsuarioId,
+            nome: usuario.Nome,
+            sobrenome: usuario.Sobrenome,
+            email: usuario.Email,
+            username: usuario.Username
+        );
         
-        var usuario = new Usuario(nome: createUsuarioDto.Nome,
+        return Ok(returnDto);
+    }
+
+    [HttpPost("signup")]
+    public IActionResult SignUp(CreateUsuarioDTO createUsuarioDto)
+    {
+        var usuario = new Usuario(
+            nome: createUsuarioDto.Nome,
             sobrenome: createUsuarioDto.Sobrenome,
             email: createUsuarioDto.Username,
             username: createUsuarioDto.Email,
             hashSenha: createUsuarioDto.Senha);
         
         usuario = _service.Create(usuario);
-        var returnDTO = new ReturnUsuarioDTO(usuarioId: usuario.UsuarioId,
+        var returnDto = new ReturnUsuarioDTO(
+            usuarioId: usuario.UsuarioId,
             nome: usuario.Nome,
             sobrenome: usuario.Sobrenome,
             email: usuario.Email,
             username: usuario.Username);
         
-        return Created("api/users", returnDTO);
+        return Created("api/users", returnDto);
+    }
+
+    [HttpPost("/login")]
+    public IActionResult Login([FromBody] LoginDTO loginDto)
+    {
+        var usuario = _service.Login(loginDto);
+        var returnDto = new ReturnUsuarioDTO(
+            usuarioId: usuario.UsuarioId,
+            nome: usuario.Nome,
+            sobrenome: usuario.Sobrenome,
+            email: usuario.Email,
+            username: usuario.Username);
+        
+        return Ok(returnDto);
     }
 }
