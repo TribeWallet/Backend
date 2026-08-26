@@ -19,3 +19,10 @@
 ## Local environment / toolchains (e.g., if using Docker/Podman locally)
 .env.local
 .env.*.local
+
+bin/*
+obj/*
+*.dll
+*.pdb
+*.cache
+.idea/
