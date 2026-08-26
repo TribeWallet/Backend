@@ -79,3 +79,9 @@ _ReSharper*/
 *.pfx
 *.key
 secrets.json
+bin/*
+obj/*
+*.dll
+*.pdb
+*.cache
+.idea/
