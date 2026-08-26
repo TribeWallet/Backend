@@ -6,10 +6,9 @@
 .nfs*
 
 ## Arch Package Management & Builds (if you build local tools)
+## Atenção: NÃO ignorar /src/ nem /pkg/ aqui — /src/ é a raiz do código deste repositório.
 *.pkg.tar.zst
 *.pkg.tar.xz
-/pkg/
-/src/
 
 ## Common Linux Editors
 *~
@@ -20,6 +19,66 @@
 .env.local
 .env.*.local
 
+## Build results (.NET)
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+[Ll]og/
+[Ll]ogs/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.user
+*.suo
+*.userprefs
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+*.nuget.props
+*.nuget.targets
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+[Cc]overage/
+
+## IDEs
+.vs/
+.vscode/
+*.swp
+*.swo
+
+## Rider / ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## Environment / secrets
+.env
+.env.*
+!.env.example
+*.pfx
+*.key
+secrets.json
 bin/*
 obj/*
 *.dll
