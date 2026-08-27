@@ -1,12 +1,12 @@
-using DotNetEnv;
-using Microsoft.EntityFrameworkCore;
-using TribeWallet.Data;
-using TribeWallet.Application.Usuario;
-using TribeWallet.Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.Extensions.Logging.Abstractions;
+using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using TribeWallet.Application.Usuario;
+using TribeWallet.Data;
+using TribeWallet.Infrastructure;
+using TribeWallet.Services;
 
 // Antes do CreateBuilder: é aqui que ASPNETCORE_URLS e ASPNETCORE_ENVIRONMENT saem do .env
 // e entram no processo, a tempo do host lê-los. TraversePath sobe os diretórios até achar
@@ -41,15 +41,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Configure the HTTP request pipeline.
+// Configuração da pipeline de Http
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+//Configuração de dependency injection
 builder.Services.AddScoped<DbContext, AppDbContext>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryImplementation>();
 builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<TokenService>();
 
 var app = builder.Build();
 
@@ -63,8 +66,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-/*app.UseAuthentication();
-app.UseAuthorization();*/
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
