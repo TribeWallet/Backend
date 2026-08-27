@@ -24,6 +24,7 @@ public class UsuarioController: ControllerBase
         return Ok(usuarios);
     }
 
+    /*
     [HttpGet("{usuarioId}")]
     public IActionResult GetById(Guid usuarioId)
     {
@@ -38,8 +39,9 @@ public class UsuarioController: ControllerBase
         
         return Ok(returnDto);
     }
+    */
 
-    [HttpPost("signup")]
+    /*[HttpPost("signup")]
     public IActionResult SignUp(CreateUsuarioDTO createUsuarioDto)
     {
         var usuario = new Usuario
@@ -61,19 +63,5 @@ public class UsuarioController: ControllerBase
             username: usuario.Username);
         
         return Created("api/users", returnDto);
-    }
-
-    [HttpPost("/login")]
-    public IActionResult Login([FromBody] LoginDTO loginDto)
-    {
-        var usuario = _service.Login(loginDto);
-        var returnDto = new ReturnUsuarioDTO(
-            usuarioId: usuario.UsuarioId,
-            nome: usuario.Nome,
-            sobrenome: usuario.Sobrenome,
-            email: usuario.Email,
-            username: usuario.Username);
-        
-        return Ok(returnDto);
-    }
+    }*/
 }

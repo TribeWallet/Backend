@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
-using TribeWallet.Domain.Entities;
+using TribeWallet.Application.Usuario;
 using TribeWallet.Services;
 
 namespace TribeWallet.Presentation;
@@ -10,28 +9,18 @@ namespace TribeWallet.Presentation;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly TokenService _tokenService;
-    public AuthController(TokenService tokenService)
+    private readonly UsuarioService _usuarioService;
+    public AuthController(UsuarioService usuarioService)
     {
-        _tokenService = tokenService;
+        _usuarioService = usuarioService;
     }
 
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginDTO login)
     {
-        if (login is { Email: "teste", Password: "123" })
-        {
-            var usuario = new Usuario
-            {
-                UsuarioId = Guid.NewGuid(),
-                Username = "teste",
-                Email = login.Email,
-            };
 
-            var token = _tokenService.GenerateToken(usuario);
-            return Ok(new { token });
-        }
+        var usuario = _usuarioService.Login(login);
 
-        return Unauthorized("Credenciais inválidas");
+        return Ok(usuario);
     }
 }

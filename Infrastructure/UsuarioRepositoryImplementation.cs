@@ -1,14 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using TribeWallet.Application;
 using TribeWallet.Application.Usuario;
+using TribeWallet.Data;
 using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
 public class UsuarioRepositoryImplementation : IUsuarioRepository
 {
-    private readonly DbContext _dbContext;
-    public UsuarioRepositoryImplementation(DbContext dbContext)
+    private readonly AppDbContext _dbContext;
+    public UsuarioRepositoryImplementation(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -41,8 +42,10 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
     public Usuario Login(LoginDTO loginDto)
     {
         //logica de login
-
-        //return GetById(1);
-        throw new NotImplementedException();
+        var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Email == loginDto.Email);
+        if (usuario == null || usuario.HashSenha != loginDto.Senha)
+            throw new UnauthorizedAccessException("Email ou senha incorretos");
+            
+        return usuario;
     }
 }
