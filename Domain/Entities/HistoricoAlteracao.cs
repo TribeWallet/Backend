@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>
 /// Trilha de auditoria. Referencia a entidade alterada de forma genérica,

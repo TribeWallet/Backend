@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>
 /// Base de todas as entidades persistidas. O identificador primário (UUID) circula só dentro

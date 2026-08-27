@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>Como o valor total de um compromisso é rateado entre os integrantes.</summary>
 public enum TipoDivisao

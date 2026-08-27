@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>Vínculo entre um usuário e um grupo. É o integrante que assume dívidas.</summary>
 public class Integrante : EntidadeBase

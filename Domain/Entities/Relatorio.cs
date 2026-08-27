@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>O PDF vive no servidor externo de arquivos; aqui fica só a URL.</summary>
 public class Relatorio : EntidadeBase

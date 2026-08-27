@@ -2,13 +2,13 @@ namespace TribeWallet.Application;
 
 public class ReturnUsuarioDTO
 {
-    public int UsuarioId { get; set; }
+    public Guid UsuarioId { get; set; }
     public string Nome { get; set; }
     public string Sobrenome { get; set; }
     public string Email { get; set; }
     public string Username { get; set; }
 
-    public ReturnUsuarioDTO(int usuarioId, string nome, string sobrenome, string email, string username)
+    public ReturnUsuarioDTO(Guid usuarioId, string nome, string sobrenome, string email, string username)
     {
         UsuarioId = usuarioId;
         Nome = nome;

@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>
 /// Aviso entre usuários. Entidade + EntidadeId apontam de forma genérica para o
