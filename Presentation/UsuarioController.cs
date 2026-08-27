@@ -2,7 +2,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
 using TribeWallet.Application;
+using TribeWallet.Application.Usuario;
 using TribeWallet.Domain;
+using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Presentation;
 [Route("api/users")]
@@ -18,12 +20,12 @@ public class UsuarioController: ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        _service.GetAll();
-        return Ok();
+        var usuarios = _service.GetAll();
+        return Ok(usuarios);
     }
 
     [HttpGet("{usuarioId}")]
-    public IActionResult GetById(int usuarioId)
+    public IActionResult GetById(Guid usuarioId)
     {
         var usuario = _service.GetById(usuarioId);
         var returnDto = new ReturnUsuarioDTO(
@@ -40,12 +42,15 @@ public class UsuarioController: ControllerBase
     [HttpPost("signup")]
     public IActionResult SignUp(CreateUsuarioDTO createUsuarioDto)
     {
-        var usuario = new Usuario(
-            nome: createUsuarioDto.Nome,
-            sobrenome: createUsuarioDto.Sobrenome,
-            email: createUsuarioDto.Username,
-            username: createUsuarioDto.Email,
-            hashSenha: createUsuarioDto.Senha);
+        var usuario = new Usuario
+        {
+            Nome =  createUsuarioDto.Nome,
+            Sobrenome = createUsuarioDto.Sobrenome,
+            Email = createUsuarioDto.Email,
+            Username = createUsuarioDto.Username,
+            Imagem = createUsuarioDto.Imagem,
+            HashSenha =  createUsuarioDto.Senha
+        };
         
         usuario = _service.Create(usuario);
         var returnDto = new ReturnUsuarioDTO(

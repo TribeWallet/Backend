@@ -1,9 +1,9 @@
-namespace TribeWallet.Application;
-using TribeWallet.Domain;
+namespace TribeWallet.Application.Usuario;
+using TribeWallet.Domain.Entities;
 
 public interface IUsuarioRepository
 {
-    Usuario GetById(int id);
+    Usuario GetById(Guid id);
     IEnumerable<Usuario> GetAll();
     void Add(Usuario usuario);
     void Update(Usuario usuario);

@@ -2,6 +2,7 @@ using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using TribeWallet.Data;
 using TribeWallet.Application;
+using TribeWallet.Application.Usuario;
 using TribeWallet.Infrastructure;
 
 // Antes do CreateBuilder: é aqui que ASPNETCORE_URLS e ASPNETCORE_ENVIRONMENT saem do .env
@@ -24,6 +25,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<DbContext, AppDbContext>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryImplementation>();
 builder.Services.AddScoped<UsuarioService>();
 

@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>Fatia da despesa atribuída a um integrante: quanto deve e quanto já pagou.</summary>
 public class IntegranteCompromisso : EntidadeBase

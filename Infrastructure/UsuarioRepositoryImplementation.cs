@@ -1,18 +1,26 @@
+using Microsoft.EntityFrameworkCore;
 using TribeWallet.Application;
-using TribeWallet.Domain;
+using TribeWallet.Application.Usuario;
+using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
 public class UsuarioRepositoryImplementation : IUsuarioRepository
 {
-    public Usuario GetById(int id)
+    private readonly DbContext _dbContext;
+    public UsuarioRepositoryImplementation(DbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+    public Usuario GetById(Guid id)
     {
         throw new NotImplementedException();
     }
 
     public IEnumerable<Usuario> GetAll()
     {
-        throw new NotImplementedException();
+        IEnumerable<Usuario> usuarios = _dbContext.Set<Usuario>();
+        return usuarios;
     }
 
     public void Add(Usuario usuario)
@@ -34,6 +42,7 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
     {
         //logica de login
 
-        return GetById(1);
+        //return GetById(1);
+        throw new NotImplementedException();
     }
 }

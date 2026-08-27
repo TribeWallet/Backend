@@ -1,4 +1,4 @@
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>Uma despesa lançada no grupo e rateada entre os integrantes.</summary>
 public class CompromissoFinanceiro : EntidadeBase

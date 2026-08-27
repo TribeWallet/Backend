@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace TribeWallet.Entities;
+namespace TribeWallet.Domain.Entities;
 
 /// <summary>Gera os tokens públicos das entidades.</summary>
 public static class TokenExterno

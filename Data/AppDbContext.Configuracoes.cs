@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using TribeWallet.Entities;
+using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Data;
 
