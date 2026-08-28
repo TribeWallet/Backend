@@ -24,6 +24,13 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         return usuarios;
     }
 
+    public Usuario Create(Usuario usuario)
+    {
+        var newUsuario = _dbContext.Usuarios.Add(usuario);
+        _dbContext.SaveChanges();
+        return newUsuario.Entity;
+    }
+
     public void Add(Usuario usuario)
     {
         throw new NotImplementedException();

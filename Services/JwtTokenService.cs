@@ -6,10 +6,10 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Services;
 
-public class TokenService
+public class JwtTokenService
 {
     private readonly IConfiguration _configuration;
-    public TokenService(IConfiguration configuration)
+    public JwtTokenService(IConfiguration configuration)
     {
         _configuration = configuration;
     }

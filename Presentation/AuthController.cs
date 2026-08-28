@@ -30,4 +30,18 @@ public class AuthController : ControllerBase
         }
 
     }
+
+    [HttpPost("register")]
+    public IActionResult Signup([FromBody] RegisterUsuarioDTO registerUsuarioDto)
+    {
+        try
+        {
+            var returnUsuarioDto = _usuarioService.Create(registerUsuarioDto);
+            return Ok(returnUsuarioDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

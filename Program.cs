@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Data;
+using TribeWallet.Domain.Entities;
 using TribeWallet.Infrastructure;
 using TribeWallet.Services;
 
@@ -52,7 +53,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<DbContext, AppDbContext>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryImplementation>();
 builder.Services.AddScoped<UsuarioService>();
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 

@@ -8,12 +8,12 @@ public class UsuarioService
     private const int FatorBCrypt = 12;
     
     private readonly IUsuarioRepository _repository;
-    private readonly TokenService _tokenService;
+    private readonly JwtTokenService _jwtTokenService;
     
-    public UsuarioService(IUsuarioRepository repository, TokenService tokenService)
+    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService)
     {
         _repository = repository;
-        _tokenService = tokenService;
+        _jwtTokenService = jwtTokenService;
     }
 
     public Usuario GetById(Guid id)
@@ -25,20 +25,36 @@ public class UsuarioService
         return _repository.GetAll();
     }
 
-    public Usuario Create(Usuario usuario)
+    public ReturnUsuarioDTO Create(RegisterUsuarioDTO registerUsuarioDto)
     {
-        /*int usuarioId = new Random().Next(1, 100);
-
-        usuario.UsuarioId = usuarioId;
+        var usuario = new Usuario
+        {
+            Nome = registerUsuarioDto.Nome,
+            Sobrenome = registerUsuarioDto.Sobrenome,
+            Email = registerUsuarioDto.Email,
+            Username = registerUsuarioDto.Username,
+            Imagem = registerUsuarioDto.Imagem ?? "",
+            HashSenha = HashSenha(registerUsuarioDto.Senha)
+        };
         
-        return usuario;*/
-        throw new NotImplementedException();
+        usuario = _repository.Create(usuario);
+
+        var returnUsuarioDto = new ReturnUsuarioDTO
+        {
+            UsuarioToken = usuario.Token,
+            Nome = usuario.Nome,
+            Sobrenome = usuario.Sobrenome,
+            Email = usuario.Email,
+            Username = usuario.Username,
+            JwtToken = _jwtTokenService.GenerateToken(usuario)
+        };
+        return returnUsuarioDto;
     }
 
     public ReturnUsuarioDTO Login(LoginDTO loginDto)
     {
         var usuario = _repository.Login(loginDto);
-        var jwtToken = _tokenService.GenerateToken(usuario);
+        var jwtToken = _jwtTokenService.GenerateToken(usuario);
         var returnDto = new ReturnUsuarioDTO
         {
             UsuarioToken = usuario.Token,
