@@ -43,8 +43,13 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
     {
         //logica de login
         var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Email == loginDto.Email);
-        if (usuario == null || usuario.HashSenha != loginDto.Senha)
-            throw new UnauthorizedAccessException("Email ou senha incorretos");
+        if (usuario == null)
+            throw new UnauthorizedAccessException("usuario não encontrado");
+        
+        var isValid = BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.HashSenha);
+        Console.WriteLine(isValid);
+        if(!isValid)
+            throw new UnauthorizedAccessException("senha incorreta");
             
         return usuario;
     }

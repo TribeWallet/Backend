@@ -1,6 +1,6 @@
-using TribeWallet.Services;
-
 namespace TribeWallet.Application.Usuario;
+using TribeWallet.Services;
+using TribeWallet.Domain.Entities;
 
 public class UsuarioService
 {
@@ -16,16 +16,16 @@ public class UsuarioService
         _tokenService = tokenService;
     }
 
-    public Domain.Entities.Usuario GetById(Guid id)
+    public Usuario GetById(Guid id)
     {
         return _repository.GetById(id);
     }
-    public IEnumerable<Domain.Entities.Usuario> GetAll()
+    public IEnumerable<Usuario> GetAll()
     {
         return _repository.GetAll();
     }
 
-    public Domain.Entities.Usuario Create(Domain.Entities.Usuario usuario)
+    public Usuario Create(Usuario usuario)
     {
         /*int usuarioId = new Random().Next(1, 100);
 
@@ -37,8 +37,6 @@ public class UsuarioService
 
     public ReturnUsuarioDTO Login(LoginDTO loginDto)
     {
-        //loginDto.Senha = HashSenha(loginDto.Senha);
-        
         var usuario = _repository.Login(loginDto);
         var jwtToken = _tokenService.GenerateToken(usuario);
         var returnDto = new ReturnUsuarioDTO

@@ -18,9 +18,16 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginDTO login)
     {
+        try
+        {
+            var usuario = _usuarioService.Login(login);
+            return Ok(usuario);
 
-        var usuario = _usuarioService.Login(login);
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            return Unauthorized(e.Message);
+        }
 
-        return Ok(usuario);
     }
 }
