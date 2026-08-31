@@ -36,9 +36,12 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         throw new NotImplementedException();
     }
 
-    public void Update(Usuario usuario)
+    public Usuario Update(Usuario usuario)
     {
-        throw new NotImplementedException();
+        var newUsuario = _dbContext.Usuarios.Update(usuario);
+        _dbContext.SaveChanges();
+     
+        return  newUsuario.Entity;
     }
 
     public void Delete(int id)
@@ -58,6 +61,14 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         if(!isValid)
             throw new UnauthorizedAccessException("senha incorreta");
             
+        return usuario;
+    }
+
+    public Usuario GetByToken(string token)
+    {
+        var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Token == token);
+        if (usuario == null)
+            throw new Exception("Usuario nao encontrado");
         return usuario;
     }
 }
