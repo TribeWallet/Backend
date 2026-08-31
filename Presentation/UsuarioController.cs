@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
 using TribeWallet.Application;
@@ -24,44 +25,18 @@ public class UsuarioController: ControllerBase
         return Ok(usuarios);
     }
 
-    /*
-    [HttpGet("{usuarioId}")]
-    public IActionResult GetById(Guid usuarioId)
+    [Authorize]
+    [HttpPut("{token}")]
+    public IActionResult EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string token)
     {
-        var usuario = _service.GetById(usuarioId);
-        var returnDto = new ReturnUsuarioDTO(
-            usuarioId: usuario.UsuarioId,
-            nome: usuario.Nome,
-            sobrenome: usuario.Sobrenome,
-            email: usuario.Email,
-            username: usuario.Username
-        );
-        
-        return Ok(returnDto);
-    }
-    */
-
-    /*[HttpPost("signup")]
-    public IActionResult SignUp(CreateUsuarioDTO createUsuarioDto)
-    {
-        var usuario = new Usuario
+        try
         {
-            Nome =  createUsuarioDto.Nome,
-            Sobrenome = createUsuarioDto.Sobrenome,
-            Email = createUsuarioDto.Email,
-            Username = createUsuarioDto.Username,
-            Imagem = createUsuarioDto.Imagem,
-            HashSenha =  createUsuarioDto.Senha
-        };
-        
-        usuario = _service.Create(usuario);
-        var returnDto = new ReturnUsuarioDTO(
-            usuarioId: usuario.UsuarioId,
-            nome: usuario.Nome,
-            sobrenome: usuario.Sobrenome,
-            email: usuario.Email,
-            username: usuario.Username);
-        
-        return Created("api/users", returnDto);
-    }*/
+            var returnDto =  _service.Update(editUsuarioDto, token);
+            return  Ok(returnDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

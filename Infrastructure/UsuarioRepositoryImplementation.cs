@@ -36,9 +36,12 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         throw new NotImplementedException();
     }
 
-    public void Update(Usuario usuario)
+    public Usuario Update(Usuario usuario)
     {
-        throw new NotImplementedException();
+        var newUsuario = _dbContext.Usuarios.Update(usuario);
+        _dbContext.SaveChanges();
+     
+        return  newUsuario.Entity;
     }
 
     public void Delete(int id)
@@ -51,13 +54,20 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         //logica de login
         var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Email == loginDto.Email);
         if (usuario == null)
-            throw new UnauthorizedAccessException("usuario não encontrado");
+            throw new UnauthorizedAccessException("Usuário ou senha incorretos");
         
         var isValid = BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.HashSenha);
-        Console.WriteLine(isValid);
         if(!isValid)
-            throw new UnauthorizedAccessException("senha incorreta");
+            throw new UnauthorizedAccessException("Usuário ou senha incorretos");
             
+        return usuario;
+    }
+
+    public Usuario GetByToken(string token)
+    {
+        var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Token == token);
+        if (usuario == null)
+            throw new Exception("Usuário não encontrado pelo token informado");
         return usuario;
     }
 }

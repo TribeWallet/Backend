@@ -68,8 +68,36 @@ public class UsuarioService
         return returnDto;
     }
 
+    public ReturnUsuarioDTO Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    {
+        var usuario = GetByToken(usuarioToken);
+        usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
+        usuario.Sobrenome = editUsuarioDto.Sobrenome ?? usuario.Sobrenome;
+        usuario.Username = editUsuarioDto.Username ?? usuario.Username;
+        usuario.Imagem = editUsuarioDto.Imagem ?? usuario.Imagem;
+        usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
+        
+        var newUsuario = _repository.Update(usuario);
+        var returnDto = new ReturnUsuarioDTO
+        {
+            UsuarioToken = newUsuario.Token,
+            Nome = newUsuario.Nome,
+            Sobrenome = newUsuario.Sobrenome,
+            Email = newUsuario.Email,
+            Username = newUsuario.Username
+        };
+        
+        return returnDto;
+    }
+
+    private Usuario GetByToken(string token)
+    {
+        var usuario =  _repository.GetByToken(token);
+        return usuario;
+    }
     private static string HashSenha(string senha)
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
     }
+    
 }
