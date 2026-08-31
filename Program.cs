@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Data;
 using TribeWallet.Domain.Entities;
@@ -84,9 +85,12 @@ builder.Services.AddSwaggerGen();
 
 //Configuração de dependency injection
 builder.Services.AddScoped<DbContext, AppDbContext>();
+builder.Services.AddScoped<JwtTokenService>();
+
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryImplementation>();
 builder.Services.AddScoped<UsuarioService>();
-builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IGrupoRepository, GrupoRepositoryImplementation>();
+builder.Services.AddScoped<GrupoService>();
 
 var app = builder.Build();
 
