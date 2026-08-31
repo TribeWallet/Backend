@@ -68,9 +68,9 @@ public class UsuarioService
         return returnDto;
     }
 
-    public ReturnUsuarioDTO Update(EditUsuarioDTO editUsuarioDto)
+    public ReturnUsuarioDTO Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {
-        var usuario = GetByToken(editUsuarioDto.UuarioToken);
+        var usuario = GetByToken(usuarioToken);
         usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
         usuario.Sobrenome = editUsuarioDto.Sobrenome ?? usuario.Sobrenome;
         usuario.Username = editUsuarioDto.Username ?? usuario.Username;
@@ -84,8 +84,7 @@ public class UsuarioService
             Nome = newUsuario.Nome,
             Sobrenome = newUsuario.Sobrenome,
             Email = newUsuario.Email,
-            Username = newUsuario.Username,
-            JwtToken = editUsuarioDto.JwtToken
+            Username = newUsuario.Username
         };
         
         return returnDto;

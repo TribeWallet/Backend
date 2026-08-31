@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
 using TribeWallet.Application;
@@ -24,12 +25,13 @@ public class UsuarioController: ControllerBase
         return Ok(usuarios);
     }
 
+    [Authorize]
     [HttpPut("{token}")]
-    public IActionResult EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto)
+    public IActionResult EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string token)
     {
         try
         {
-            var returnDto =  _service.Update(editUsuarioDto);
+            var returnDto =  _service.Update(editUsuarioDto, token);
             return  Ok(returnDto);
         }
         catch (Exception e)
