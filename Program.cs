@@ -1,9 +1,13 @@
+using System.Text;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using TribeWallet.Data;
-using TribeWallet.Application;
+using Microsoft.IdentityModel.Tokens;
 using TribeWallet.Application.Usuario;
+using TribeWallet.Data;
+using TribeWallet.Domain.Entities;
 using TribeWallet.Infrastructure;
+using TribeWallet.Services;
 
 // Antes do CreateBuilder: é aqui que ASPNETCORE_URLS e ASPNETCORE_ENVIRONMENT saem do .env
 // e entram no processo, a tempo do host lê-los. TraversePath sobe os diretórios até achar
@@ -19,15 +23,37 @@ builder.Services.AddDbContext<AppDbContext>(options => options
     .UseNpgsql(ConnectionString.Montar(builder.Configuration))
     .UseSnakeCaseNamingConvention());
 
-// Configure the HTTP request pipeline.
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Configuração da pipeline de Http
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+//Configuração de dependency injection
 builder.Services.AddScoped<DbContext, AppDbContext>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositoryImplementation>();
 builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
@@ -41,7 +67,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
