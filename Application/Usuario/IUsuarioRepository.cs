@@ -3,11 +3,10 @@ using TribeWallet.Domain.Entities;
 
 public interface IUsuarioRepository
 {
-    Usuario GetById(Guid id);
-    Usuario GetByToken(string token);
-    IEnumerable<Usuario> GetAll();
-    Usuario Create(Usuario usuario);
-    Usuario Update(Usuario usuario);
+    Task<Usuario> GetByToken(string token);
+    Task<IEnumerable<Usuario>> GetAll();
+    Task<Usuario> Create(Usuario usuario);
+    Task<Usuario> Update(Usuario usuario);
     void Delete(int id);
-    Usuario Login(LoginDTO loginDto);
+    Task<Usuario> Login(LoginDTO loginDto);
 }

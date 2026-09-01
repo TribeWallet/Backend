@@ -16,11 +16,11 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginDTO login)
+    public async Task<IActionResult> Login([FromBody] LoginDTO login)
     {
         try
         {
-            var usuario = _usuarioService.Login(login);
+            var usuario = await _usuarioService.Login(login);
             return Ok(usuario);
 
         }
@@ -32,11 +32,11 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Signup([FromBody] RegisterUsuarioDTO registerUsuarioDto)
+    public async Task<IActionResult> Signup([FromBody] RegisterUsuarioDTO registerUsuarioDto)
     {
         try
         {
-            var returnUsuarioDto = _usuarioService.Create(registerUsuarioDto);
+            var returnUsuarioDto = await _usuarioService.Create(registerUsuarioDto);
             return Ok(returnUsuarioDto);
         }
         catch (Exception e)

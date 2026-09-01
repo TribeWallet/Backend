@@ -13,33 +13,24 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
     {
         _dbContext = dbContext;
     }
-    public Usuario GetById(Guid id)
-    {
-        throw new NotImplementedException();
-    }
 
-    public IEnumerable<Usuario> GetAll()
+    public async Task<IEnumerable<Usuario>> GetAll()
     {
-        IEnumerable<Usuario> usuarios = _dbContext.Set<Usuario>();
+        var usuarios = await _dbContext.Usuarios.ToListAsync();
         return usuarios;
     }
 
-    public Usuario Create(Usuario usuario)
+    public async Task<Usuario> Create(Usuario usuario)
     {
         var newUsuario = _dbContext.Usuarios.Add(usuario);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         return newUsuario.Entity;
     }
 
-    public void Add(Usuario usuario)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Usuario Update(Usuario usuario)
+    public async Task<Usuario> Update(Usuario usuario)
     {
         var newUsuario = _dbContext.Usuarios.Update(usuario);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
      
         return  newUsuario.Entity;
     }
@@ -49,10 +40,9 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         throw new NotImplementedException();
     }
 
-    public Usuario Login(LoginDTO loginDto)
+    public async Task<Usuario> Login(LoginDTO loginDto)
     {
-        //logica de login
-        var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Email == loginDto.Email);
+        var usuario = await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
         if (usuario == null)
             throw new UnauthorizedAccessException("Usuário ou senha incorretos");
         
@@ -63,9 +53,9 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         return usuario;
     }
 
-    public Usuario GetByToken(string token)
+    public async Task<Usuario> GetByToken(string token)
     {
-        var usuario = _dbContext.Usuarios.FirstOrDefault(u => u.Token == token);
+        var usuario = await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Token == token);
         if (usuario == null)
             throw new Exception("Usuário não encontrado pelo token informado");
         return usuario;
