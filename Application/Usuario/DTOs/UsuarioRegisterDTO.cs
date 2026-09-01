@@ -1,6 +1,6 @@
 namespace TribeWallet.Application;
 
-public class RegisterUsuarioDTO
+public class UsuarioRegisterDTO
 {
     public string Nome { get; set; }
     public string Sobrenome { get; set; }

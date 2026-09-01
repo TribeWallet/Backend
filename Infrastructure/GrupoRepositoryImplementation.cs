@@ -30,9 +30,12 @@ public class GrupoRepositoryImplementation : IGrupoRepository
         return grupos;
     }
 
-    public Task<Grupo> Create(Grupo grupo)
+    public async Task<Grupo> Create(Grupo grupo)
     {
-        throw new NotImplementedException();
+        var newGrupo = _dbContext.Grupos.Add(grupo);
+        await _dbContext.SaveChangesAsync();
+        
+        return newGrupo.Entity;
     }
 
     public Task<Grupo> Update(Grupo grupo)

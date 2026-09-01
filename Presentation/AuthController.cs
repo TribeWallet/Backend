@@ -32,11 +32,11 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Signup([FromBody] RegisterUsuarioDTO registerUsuarioDto)
+    public async Task<IActionResult> Signup([FromBody] UsuarioRegisterDTO usuarioRegisterDto)
     {
         try
         {
-            var returnUsuarioDto = await _usuarioService.Create(registerUsuarioDto);
+            var returnUsuarioDto = await _usuarioService.Create(usuarioRegisterDto);
             return Ok(returnUsuarioDto);
         }
         catch (Exception e)

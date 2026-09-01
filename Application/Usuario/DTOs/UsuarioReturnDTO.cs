@@ -1,6 +1,6 @@
 namespace TribeWallet.Application;
 
-public class ReturnUsuarioDTO
+public class UsuarioReturnDTO
 {
     public string UsuarioToken { get; set; }
     public string Nome { get; set; }

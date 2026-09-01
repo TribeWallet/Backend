@@ -11,10 +11,10 @@ public class GrupoService
         _repository = repository;
     }
 
-    public async Task<List<ReturnGrupoDTO>> GetByUsuarioToken(string token)
+    public async Task<List<GrupoReturnDTO>> GetByUsuarioToken(string token)
     {
         var grupos = await _repository.GetByUsuarioToken(token);
-        var returnDtoList = grupos.Select(g => new ReturnGrupoDTO
+        var returnDtoList = grupos.Select(g => new GrupoReturnDTO
         {
             Nome = g.Nome,
             Descricao =  g.Descricao,
@@ -22,4 +22,6 @@ public class GrupoService
         
         return returnDtoList;
     }
+    
+    public async Task<GrupoReturnDTO>
 }

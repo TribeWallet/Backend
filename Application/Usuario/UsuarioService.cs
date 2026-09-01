@@ -21,21 +21,21 @@ public class UsuarioService
         return await _repository.GetAll();
     }
 
-    public async Task<ReturnUsuarioDTO> Create(RegisterUsuarioDTO registerUsuarioDto)
+    public async Task<UsuarioReturnDTO> Create(UsuarioRegisterDTO usuarioRegisterDto)
     {
         var usuario = new Usuario
         {
-            Nome = registerUsuarioDto.Nome,
-            Sobrenome = registerUsuarioDto.Sobrenome,
-            Email = registerUsuarioDto.Email,
-            Username = registerUsuarioDto.Username,
-            Imagem = registerUsuarioDto.Imagem ?? "",
-            HashSenha = HashSenha(registerUsuarioDto.Senha)
+            Nome = usuarioRegisterDto.Nome,
+            Sobrenome = usuarioRegisterDto.Sobrenome,
+            Email = usuarioRegisterDto.Email,
+            Username = usuarioRegisterDto.Username,
+            Imagem = usuarioRegisterDto.Imagem ?? "",
+            HashSenha = HashSenha(usuarioRegisterDto.Senha)
         };
         
         usuario = await _repository.Create(usuario);
 
-        var returnUsuarioDto = new ReturnUsuarioDTO
+        var returnUsuarioDto = new UsuarioReturnDTO
         {
             UsuarioToken = usuario.Token,
             Nome = usuario.Nome,
@@ -47,11 +47,11 @@ public class UsuarioService
         return returnUsuarioDto;
     }
 
-    public async Task<ReturnUsuarioDTO> Login(LoginDTO loginDto)
+    public async Task<UsuarioReturnDTO> Login(LoginDTO loginDto)
     {
         var usuario = await _repository.Login(loginDto);
         var jwtToken = _jwtTokenService.GenerateToken(usuario);
-        var returnDto = new ReturnUsuarioDTO
+        var returnDto = new UsuarioReturnDTO
         {
             UsuarioToken = usuario.Token,
             Nome = usuario.Nome,
@@ -64,7 +64,7 @@ public class UsuarioService
         return returnDto;
     }
 
-    public async Task<ReturnUsuarioDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<UsuarioReturnDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
         usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
@@ -74,7 +74,7 @@ public class UsuarioService
         usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
-        var returnDto = new ReturnUsuarioDTO
+        var returnDto = new UsuarioReturnDTO
         {
             UsuarioToken = newUsuario.Token,
             Nome = newUsuario.Nome,
