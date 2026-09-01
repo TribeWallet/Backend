@@ -6,10 +6,10 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
-public class UsuarioRepositoryImplementation : IUsuarioRepository
+public class UsuarioRepository : IUsuarioRepository
 {
     private readonly AppDbContext _dbContext;
-    public UsuarioRepositoryImplementation(AppDbContext dbContext)
+    public UsuarioRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }

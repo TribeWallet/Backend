@@ -5,11 +5,11 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
-public class GrupoRepositoryImplementation : IGrupoRepository
+public class GrupoRepository : IGrupoRepository
 {
     private readonly AppDbContext _dbContext;
 
-    public GrupoRepositoryImplementation(AppDbContext dbContext)
+    public GrupoRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }

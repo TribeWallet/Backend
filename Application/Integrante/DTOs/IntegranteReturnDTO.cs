@@ -7,6 +7,6 @@ public class IntegranteReturnDTO
 {
     public string IntegranteToken  { get; set; }
     public UsuarioReturnDTO Usuario { get; set; }
-    public GrupoReturnDTO Grupo { get; set; }
+    public string GrupoToken { get; set; }
     public ICollection<IntegranteCompromissoReturnDTO> Compromissos { get; set; } = [];
 }
