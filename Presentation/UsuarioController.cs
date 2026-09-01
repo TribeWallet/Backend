@@ -19,19 +19,27 @@ public class UsuarioController: ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var usuarios = _service.GetAll();
+        var usuarios = await _service.GetAll();
         return Ok(usuarios);
     }
 
     [Authorize]
     [HttpPut("{token}")]
-    public IActionResult EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string token)
+    public async Task<IActionResult> EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string token)
     {
         try
         {
-            var returnDto =  _service.Update(editUsuarioDto, token);
+            var returnDto =  await _service.Update(editUsuarioDto, token);
+            
+            //busca token jwt dos headers da requisição
+            var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
+            var jwtToken = authHeader.StartsWith("Bearer ") 
+                ? authHeader.Substring("Bearer ".Length) 
+                : authHeader;
+            
+            returnDto.JwtToken = jwtToken;
             return  Ok(returnDto);
         }
         catch (Exception e)
