@@ -22,4 +22,9 @@ public class IntegranteRepository : IIntegranteRepository
         
         return integrantes;
     }
+
+    public Task<Integrante> Create(Integrante integrante)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.Usuario;
@@ -93,6 +94,8 @@ builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
 builder.Services.AddScoped<GrupoService>();
 builder.Services.AddScoped<IIntegranteRepository, IntegranteRepository>();
+builder.Services.AddScoped<IntegranteService>();
+builder.Services.AddScoped<ICompromissoFinanceiroRepository, CompromissoFinanceiroRepository>();
 
 
 var app = builder.Build();

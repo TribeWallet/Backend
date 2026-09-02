@@ -21,50 +21,52 @@ public class UsuarioService
         return await _repository.GetAll();
     }
 
-    public async Task<UsuarioReturnDTO> Create(UsuarioRegisterDTO usuarioRegisterDto)
+    public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
         var usuario = new Usuario
         {
-            Nome = usuarioRegisterDto.Nome,
-            Sobrenome = usuarioRegisterDto.Sobrenome,
-            Email = usuarioRegisterDto.Email,
-            Username = usuarioRegisterDto.Username,
-            Imagem = usuarioRegisterDto.Imagem ?? "",
-            HashSenha = HashSenha(usuarioRegisterDto.Senha)
+            Nome = createUsuarioRequestDto.Nome,
+            Sobrenome = createUsuarioRequestDto.Sobrenome,
+            Email = createUsuarioRequestDto.Email,
+            Username = createUsuarioRequestDto.Username,
+            Imagem = createUsuarioRequestDto.Imagem ?? "",
+            HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
-        
         usuario = await _repository.Create(usuario);
 
-        var returnUsuarioDto = new UsuarioReturnDTO
+        var usuarioResponseDto = new UsuarioResponseDTO
         {
             UsuarioToken = usuario.Token,
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
             Username = usuario.Username,
-            JwtToken = _jwtTokenService.GenerateToken(usuario)
         };
-        return returnUsuarioDto;
+        return usuarioResponseDto;
     }
 
-    public async Task<UsuarioReturnDTO> Login(LoginDTO loginDto)
+    public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDto)
     {
-        var usuario = await _repository.Login(loginDto);
+        var usuario = await _repository.Login(loginRequestDto);
         var jwtToken = _jwtTokenService.GenerateToken(usuario);
-        var returnDto = new UsuarioReturnDTO
+        var responseDto = new UsuarioResponseDTO
         {
             UsuarioToken = usuario.Token,
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
             Username = usuario.Username,
-            JwtToken = jwtToken
         };
-        
-        return returnDto;
+
+        var loginResponseDto = new LoginResponseDTO
+        {
+            UsuarioResponseDto = responseDto,
+            JwtToken = jwtToken,
+        };
+        return loginResponseDto;
     }
 
-    public async Task<UsuarioReturnDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<UsuarioResponseDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
         usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
@@ -74,7 +76,7 @@ public class UsuarioService
         usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
-        var returnDto = new UsuarioReturnDTO
+        var responseDto = new UsuarioResponseDTO
         {
             UsuarioToken = newUsuario.Token,
             Nome = newUsuario.Nome,
@@ -83,10 +85,10 @@ public class UsuarioService
             Username = newUsuario.Username
         };
         
-        return returnDto;
+        return responseDto;
     }
 
-    private async Task<Usuario> GetByToken(string token)
+    public async Task<Usuario> GetByToken(string token)
     {
         var usuario =  await _repository.GetByToken(token);
         return usuario;

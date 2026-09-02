@@ -4,12 +4,12 @@ using TribeWallet.Application.Pagamento.DTOs;
 
 namespace TribeWallet.Application.IntegranteCompromisso.DTOs;
 
-public class IntegranteCompromissoReturnDTO
+public class IntegranteCompromissoResponseDTO
 {
     public string IntegranteCompromissoToken { get; set; }
-    public IntegranteReturnDTO Integrante { get; set; }
-    public CompromissoFinanceiroReturnDTO CompromissoFinanceiro { get; set; }
+    public IntegranteResponseDTO Integrante { get; set; }
+    public CompromissoFinanceiroResponseDTO CompromissoFinanceiro { get; set; }
     public decimal ValorDevedor { get; set; }
     public decimal ValorPago { get; set; }
-    public ICollection<PagamentoReturnDTO> Pagamentos { get; set; } = [];
+    public ICollection<PagamentoResponseDTO> Pagamentos { get; set; } = [];
 }

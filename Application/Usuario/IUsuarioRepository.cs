@@ -8,5 +8,5 @@ public interface IUsuarioRepository
     Task<Usuario> Create(Usuario usuario);
     Task<Usuario> Update(Usuario usuario);
     void Delete(int id);
-    Task<Usuario> Login(LoginDTO loginDto);
+    Task<Usuario> Login(LoginRequestDTO loginRequestDto);
 }

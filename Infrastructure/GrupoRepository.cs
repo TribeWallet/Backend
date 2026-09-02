@@ -20,13 +20,13 @@ public class GrupoRepository : IGrupoRepository
         return grupo ?? throw new Exception("Grupo não encontrado pelo token informado");
     }
 
-    public async Task<IEnumerable<Grupo>> GetByUsuarioToken(string usuarioToken)
+    public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken)
     {
         var grupos = await _dbContext.Grupos
             .Include(g => g.Integrantes)
             .ThenInclude(i => i.Usuario)
             .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken)).ToListAsync();
-        
+
         return grupos;
     }
 

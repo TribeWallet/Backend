@@ -3,10 +3,10 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Application.Pagamento.DTOs;
 
-public class PagamentoReturnDTO
+public class PagamentoResponseDTO
 {
     public string PagamentoToken { get; set; }
-    public IntegranteCompromissoReturnDTO IntegranteCompromisso { get; set; }
+    public IntegranteCompromissoResponseDTO IntegranteCompromisso { get; set; }
     public decimal Valor { get; set; }
     public DateTime Data { get; set; }
     public string ComprovanteUrl { get; set; }
