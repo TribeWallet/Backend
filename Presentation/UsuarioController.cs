@@ -8,7 +8,7 @@ using TribeWallet.Domain;
 using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Presentation;
-[Route("api/users")]
+[Route("api/usuarios")]
 [ApiController]
 public class UsuarioController: ControllerBase
 {
@@ -26,21 +26,13 @@ public class UsuarioController: ControllerBase
     }
 
     [Authorize]
-    [HttpPut("{token}")]
-    public async Task<IActionResult> EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string token)
+    [HttpPut("{usuarioToken}")]
+    public async Task<IActionResult> UpdateUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {
         try
         {
-            var returnDto =  await _service.Update(editUsuarioDto, token);
-            
-            //busca token jwt dos headers da requisição
-            var authHeader = HttpContext.Request.Headers["Authorization"].ToString();
-            var jwtToken = authHeader.StartsWith("Bearer ") 
-                ? authHeader.Substring("Bearer ".Length) 
-                : authHeader;
-            
-            returnDto.JwtToken = jwtToken;
-            return  Ok(returnDto);
+            var responseDto =  await _service.Update(editUsuarioDto, usuarioToken);
+            return  Ok(responseDto);
         }
         catch (Exception e)
         {

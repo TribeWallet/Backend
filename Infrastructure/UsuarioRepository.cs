@@ -6,10 +6,10 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
-public class UsuarioRepositoryImplementation : IUsuarioRepository
+public class UsuarioRepository : IUsuarioRepository
 {
     private readonly AppDbContext _dbContext;
-    public UsuarioRepositoryImplementation(AppDbContext dbContext)
+    public UsuarioRepository(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -40,13 +40,13 @@ public class UsuarioRepositoryImplementation : IUsuarioRepository
         throw new NotImplementedException();
     }
 
-    public async Task<Usuario> Login(LoginDTO loginDto)
+    public async Task<Usuario> Login(LoginRequestDTO loginRequestDto)
     {
-        var usuario = await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+        var usuario = await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Email == loginRequestDto.Email);
         if (usuario == null)
             throw new UnauthorizedAccessException("Usuário ou senha incorretos");
         
-        var isValid = BCrypt.Net.BCrypt.Verify(loginDto.Senha, usuario.HashSenha);
+        var isValid = BCrypt.Net.BCrypt.Verify(loginRequestDto.Senha, usuario.HashSenha);
         if(!isValid)
             throw new UnauthorizedAccessException("Usuário ou senha incorretos");
             

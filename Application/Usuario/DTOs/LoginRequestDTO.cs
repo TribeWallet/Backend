@@ -1,6 +1,6 @@
 namespace TribeWallet.Application;
 
-public class LoginDTO
+public class LoginRequestDTO
 {
     public string Email { get; set; }
     public string Senha { get; set; }
