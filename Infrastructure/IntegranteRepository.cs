@@ -23,8 +23,10 @@ public class IntegranteRepository : IIntegranteRepository
         return integrantes;
     }
 
-    public Task<Integrante> Create(Integrante integrante)
+    public async Task<Integrante> Create(Integrante integrante)
     {
-        throw new NotImplementedException();
+        var newIntegrante = _dbContext.Integrantes.Add(integrante);
+        await _dbContext.SaveChangesAsync();
+        return newIntegrante.Entity;
     }
 }

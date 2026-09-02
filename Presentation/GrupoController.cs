@@ -35,7 +35,7 @@ public class GrupoController : ControllerBase
     {
         try
         {
-            var responseDto = _service.Create(requestDto);
+            var responseDto = await _service.Create(requestDto);
             return Ok(responseDto);
         }
         catch (Exception e)

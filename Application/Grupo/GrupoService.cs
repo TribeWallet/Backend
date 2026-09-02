@@ -38,9 +38,9 @@ public class GrupoService
         return responseDto;
     }
 
-    public async Task<Grupo> GetByToken(string token)
+    public async Task<Grupo> GetByToken(string grupoToken)
     {
-        var grupo = await _grupoRepository.GetByToken(token);
+        var grupo = await _grupoRepository.GetByToken(grupoToken);
         return grupo;
     }
 
@@ -53,21 +53,24 @@ public class GrupoService
         };
         grupo = await _grupoRepository.Create(grupo);
         
-        var integrantesResponseDto = new List<IntegranteResponseDTO>();
-        foreach (var integranteRequestDto in createGrupoRequestDto.Integrantes)
+        var integranteResponseDtoList = new List<IntegranteResponseDTO>();
+        if (createGrupoRequestDto.Integrantes.Count > 0)
         {
-            //prepara entidade de integrante
-            var newIntegrante = await _integranteService.SetupIntegranteEntity(integranteRequestDto,  grupo.Token);
-            
-            //adiciona dados do grpo na entidade de integrante
-            newIntegrante.Grupo = grupo;
-            newIntegrante.GrupoId = grupo.GrupoId;
-            
-            //persiste integrante no banco
-            newIntegrante = await _integranteRepository.Create(newIntegrante);
-            var integranteResponseDto = _integranteService.ConvertIntegranteToDto(newIntegrante, grupo.Token);
-            
-            integrantesResponseDto.Add(integranteResponseDto);
+            foreach (var integranteRequestDto in createGrupoRequestDto.Integrantes)
+            {
+                //prepara entidade de integrante
+                var newIntegrante = await _integranteService.SetupIntegranteEntity(integranteRequestDto,  grupo.Token);
+                
+                //adiciona dados do grpo na entidade de integrante
+                newIntegrante.Grupo = grupo;
+                newIntegrante.GrupoId = grupo.GrupoId;
+                
+                //persiste integrante no banco
+                newIntegrante = await _integranteRepository.Create(newIntegrante);
+                var integranteResponseDto = _integranteService.ConvertIntegranteToDto(newIntegrante, grupo.Token);
+                
+                integranteResponseDtoList.Add(integranteResponseDto);
+            }
         }
         
         //cria dto de resposta dos grupos
@@ -76,7 +79,7 @@ public class GrupoService
             GrupoToken = grupo.Token,
             Nome = grupo.Nome,
             Descricao = grupo.Descricao,
-            Integrantes =  integrantesResponseDto
+            Integrantes =  integranteResponseDtoList
             //TODO adicionar compromissos
         };
         return responseDto;
