@@ -84,5 +84,26 @@ public class GrupoService
         };
         return responseDto;
     }
-    
+
+    public async Task<GrupoResponseDTO?> Update(UpdateGrupoRequestDTO updateGrupoRequestDto, string grupoToken)
+    {
+        var grupo = await _grupoRepository.GetByToken(grupoToken);
+
+        //verifica se Nome e Descrição existem, se existirem, atualiza
+        grupo.Nome = updateGrupoRequestDto.Nome ?? grupo.Nome;
+        grupo.Descricao = updateGrupoRequestDto.Descricao ?? grupo.Descricao;
+        
+        await _grupoRepository.Update(grupo);
+        var integrantes = await _integranteService.GetAllByGrupoToken(grupoToken);
+
+        var grupoResponseDto = new GrupoResponseDTO
+        {
+            GrupoToken = grupo.Token,
+            Nome = grupo.Nome,
+            Descricao = grupo.Descricao,
+            Integrantes = integrantes
+        };
+        
+        return grupoResponseDto;
+    }
 }

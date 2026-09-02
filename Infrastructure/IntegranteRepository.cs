@@ -18,6 +18,7 @@ public class IntegranteRepository : IIntegranteRepository
     {
         var integrantes = await _dbContext.Integrantes
             .Include(i => i.Grupo)
+            .Include(i => i.Usuario)
             .Where(i => i.Grupo.Token == token).ToListAsync();
         
         return integrantes;

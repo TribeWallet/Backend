@@ -7,6 +7,7 @@ namespace TribeWallet.Presentation;
 
 [Route("api/grupos")]
 [ApiController]
+[Authorize]
 public class GrupoController : ControllerBase
 {
     private readonly GrupoService _service;
@@ -36,6 +37,20 @@ public class GrupoController : ControllerBase
         try
         {
             var responseDto = await _service.Create(requestDto);
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPut("{grupoToken}")]
+    public async Task<IActionResult> UpdateGrupo([FromBody] UpdateGrupoRequestDTO requestDto, string  grupoToken)
+    {
+        try
+        {
+            var responseDto = await _service.Update(requestDto, grupoToken);
             return Ok(responseDto);
         }
         catch (Exception e)

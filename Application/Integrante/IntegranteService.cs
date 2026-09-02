@@ -30,7 +30,7 @@ public class IntegranteService
             responseDto.Add(integranteDto);
         }
         
-        return  responseDto;
+        return responseDto;
     }
 
     public async Task<Integrante> SetupIntegranteEntity(CreateIntegranteRequestDTO createIntegranteRequestDto, string grupoToken)
@@ -46,6 +46,7 @@ public class IntegranteService
     }
     public IntegranteResponseDTO ConvertIntegranteToDto(Integrante integrante, string grupoToken)
     {
+        var i = integrante;
         var usuarioDto = ConvertUsuarioToDto(integrante.Usuario);
         var integranteDto = new IntegranteResponseDTO
         {

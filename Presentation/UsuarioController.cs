@@ -27,7 +27,7 @@ public class UsuarioController: ControllerBase
 
     [Authorize]
     [HttpPut("{usuarioToken}")]
-    public async Task<IActionResult> EditUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<IActionResult> UpdateUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {
         try
         {

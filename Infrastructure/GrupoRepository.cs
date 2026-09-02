@@ -16,7 +16,9 @@ public class GrupoRepository : IGrupoRepository
 
     public async Task<Grupo> GetByToken(string token)
     {
-        var grupo = await _dbContext.Grupos.FirstOrDefaultAsync(u => u.Token == token);
+        var grupo = await _dbContext.Grupos
+            .Include(g => g.Integrantes)
+            .FirstOrDefaultAsync(u => u.Token == token);
         return grupo ?? throw new Exception("Grupo não encontrado pelo token informado");
     }
 
@@ -38,9 +40,12 @@ public class GrupoRepository : IGrupoRepository
         return newGrupo.Entity;
     }
 
-    public Task<Grupo> Update(Grupo grupo)
+    public async Task<Grupo> Update(Grupo grupo)
     {
-        throw new NotImplementedException();
+        var newGrupo = _dbContext.Grupos.Update(grupo);
+        await _dbContext.SaveChangesAsync();
+        
+        return  newGrupo.Entity;
     }
 
 
