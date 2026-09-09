@@ -45,6 +45,20 @@ public class GrupoController : ControllerBase
         }
     }
 
+    [HttpDelete("{grupoToken}")]
+    public async Task<IActionResult> DeleteGrupo(string grupoToken)
+    {
+        try
+        {
+            await _service.Delete(grupoToken);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
     [HttpPut("{grupoToken}")]
     public async Task<IActionResult> UpdateGrupo([FromBody] UpdateGrupoRequestDTO requestDto, string  grupoToken)
     {

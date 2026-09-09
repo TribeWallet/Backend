@@ -35,9 +35,20 @@ public class UsuarioRepository : IUsuarioRepository
         return  newUsuario.Entity;
     }
 
-    public void Delete(int id)
+    /// <summary>
+    /// Soft delete: a linha continua no banco, só passa a carregar a data da exclusão. Repetir a
+    /// chamada não mexe na data original, então o horário guardado é sempre o da primeira exclusão.
+    /// </summary>
+    public async Task<Usuario> Delete(Usuario usuario)
     {
-        throw new NotImplementedException();
+        if (usuario.DeletedAt is null)
+        {
+            usuario.DeletedAt = DateTime.UtcNow;
+            _dbContext.Usuarios.Update(usuario);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        return usuario;
     }
 
     public async Task<Usuario> Login(LoginRequestDTO loginRequestDto)

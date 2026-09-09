@@ -49,8 +49,19 @@ public class GrupoRepository : IGrupoRepository
     }
 
 
-    public void Delete(int id)
+    /// <summary>
+    /// Soft delete: a linha continua no banco, só passa a carregar a data da exclusão. Repetir a
+    /// chamada não mexe na data original, então o horário guardado é sempre o da primeira exclusão.
+    /// </summary>
+    public async Task<Grupo> Delete(Grupo grupo)
     {
-        throw new NotImplementedException();
+        if (grupo.DeletedAt is null)
+        {
+            grupo.DeletedAt = DateTime.UtcNow;
+            _dbContext.Grupos.Update(grupo);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        return grupo;
     }
 }

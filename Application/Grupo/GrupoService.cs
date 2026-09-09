@@ -44,6 +44,13 @@ public class GrupoService
         return grupo;
     }
 
+    /// <summary>Marca o grupo como excluído. O registro fica no banco com a data em DeletedAt.</summary>
+    public async Task Delete(string grupoToken)
+    {
+        var grupo = await _grupoRepository.GetByToken(grupoToken);
+        await _grupoRepository.Delete(grupo);
+    }
+
     public async Task<GrupoResponseDTO?> Create(CreateGrupoRequestDTO createGrupoRequestDto)
     {
         var grupo = new Grupo
