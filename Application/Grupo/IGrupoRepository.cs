@@ -7,5 +7,5 @@ public interface IGrupoRepository
     Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken);
     Task<Grupo> Create(Grupo grupo);
     Task<Grupo> Update(Grupo grupo);
-    void Delete(int id);
+    Task<Grupo> Delete(Grupo grupo);
 }

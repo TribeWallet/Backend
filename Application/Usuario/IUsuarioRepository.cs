@@ -7,6 +7,6 @@ public interface IUsuarioRepository
     Task<IEnumerable<Usuario>> GetAll();
     Task<Usuario> Create(Usuario usuario);
     Task<Usuario> Update(Usuario usuario);
-    void Delete(int id);
+    Task<Usuario> Delete(Usuario usuario);
     Task<Usuario> Login(LoginRequestDTO loginRequestDto);
 }

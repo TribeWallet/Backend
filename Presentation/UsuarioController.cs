@@ -26,6 +26,21 @@ public class UsuarioController: ControllerBase
     }
 
     [Authorize]
+    [HttpDelete("{usuarioToken}")]
+    public async Task<IActionResult> DeleteUsuario(string usuarioToken)
+    {
+        try
+        {
+            await _service.Delete(usuarioToken);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [Authorize]
     [HttpPut("{usuarioToken}")]
     public async Task<IActionResult> UpdateUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
     {

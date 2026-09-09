@@ -88,6 +88,13 @@ public class UsuarioService
         return responseDto;
     }
 
+    /// <summary>Marca o usuário como excluído. O registro fica no banco com a data em DeletedAt.</summary>
+    public async Task Delete(string usuarioToken)
+    {
+        var usuario = await GetByToken(usuarioToken);
+        await _repository.Delete(usuario);
+    }
+
     public async Task<Usuario> GetByToken(string token)
     {
         var usuario =  await _repository.GetByToken(token);
