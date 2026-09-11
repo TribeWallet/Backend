@@ -18,11 +18,11 @@ public class GrupoController : ControllerBase
     }
 
     [HttpGet("{usuarioToken}")]
-    public async Task<IActionResult> GetByUsuarioToken(string usuarioToken)
+    public async Task<IActionResult> GetByUsuarioToken(string usuarioToken, bool deleted)
     {
         try
         {
-            var responseDto = await _service.GetAllByUsuarioToken(usuarioToken);
+            var responseDto = await _service.GetAllByUsuarioToken(usuarioToken, deleted);
             return Ok(responseDto);
         }
         catch (Exception e)

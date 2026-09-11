@@ -18,13 +18,13 @@ public class GrupoService
         _integranteService = integranteService;
     }
 
-    public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token)
+    public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
     {
-        var grupos = await _grupoRepository.GetAllByUsuarioToken(token);
+        var grupos = await _grupoRepository.GetAllByUsuarioToken(token, deleted);
         var responseDto = new List<GrupoResponseDTO>();
         foreach (var grupo in grupos)
         {
-            var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token);
+            var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted);
             var grupoDto = new GrupoResponseDTO
             {
                 GrupoToken =  grupo.Token,
@@ -101,7 +101,9 @@ public class GrupoService
         grupo.Descricao = updateGrupoRequestDto.Descricao ?? grupo.Descricao;
         
         await _grupoRepository.Update(grupo);
-        var integrantes = await _integranteService.GetAllByGrupoToken(grupoToken);
+        
+        //updates serão feitos apenas em integrantes ativos
+        var integrantes = await _integranteService.GetAllByGrupoToken(grupoToken, deleted: false);
 
         var grupoResponseDto = new GrupoResponseDTO
         {

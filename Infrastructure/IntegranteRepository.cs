@@ -14,12 +14,28 @@ public class IntegranteRepository : IIntegranteRepository
         _dbContext = dbContext;
     }
 
-    public async Task<ICollection<Integrante>> GetAllByGrupoToken(string token)
+    public async Task<ICollection<Integrante>> GetAllByGrupoToken(string token, bool deleted)
     {
-        var integrantes = await _dbContext.Integrantes
+        List<Integrante> integrantes;
+        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
+        if (!deleted)
+        {
+            integrantes = await _dbContext.Integrantes
+                .Include(i => i.Grupo)
+                .Include(i => i.Usuario)
+                .Where(i => i.Grupo.Token == token)
+                .Where(i => i.DeletedAt == null)
+                .ToListAsync();
+
+            return integrantes;
+        }
+        
+        // busca registros ativos e inativos
+        integrantes = await _dbContext.Integrantes
             .Include(i => i.Grupo)
             .Include(i => i.Usuario)
-            .Where(i => i.Grupo.Token == token).ToListAsync();
+            .Where(i => i.Grupo.Token == token)
+            .ToListAsync();
         
         return integrantes;
     }

@@ -14,10 +14,23 @@ public class UsuarioRepository : IUsuarioRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Usuario>> GetAll()
+    public async Task<IEnumerable<Usuario>> GetAll(bool deleted)
     {
-        var usuarios = await _dbContext.Usuarios.ToListAsync();
+        List<Usuario> usuarios;
+        
+        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
+        if (!deleted)
+        {
+            usuarios = await _dbContext.Usuarios
+                .Where(u => u.DeletedAt == null).ToListAsync();
+            
+            return usuarios;
+        }
+        
+        // busca registros ativos e inativos
+        usuarios = await _dbContext.Usuarios.ToListAsync();
         return usuarios;
+        
     }
 
     public async Task<Usuario> Create(Usuario usuario)

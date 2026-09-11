@@ -19,9 +19,9 @@ public class UsuarioController: ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(bool deleted = false)
     {
-        var usuarios = await _service.GetAll();
+        var usuarios = await _service.GetAll(deleted);
         return Ok(usuarios);
     }
 

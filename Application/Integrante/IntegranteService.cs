@@ -20,9 +20,9 @@ public class IntegranteService
         _grupoRepository = grupoRepository;
     }
 
-    public async Task<ICollection<IntegranteResponseDTO>> GetAllByGrupoToken(string grupoToken)
+    public async Task<ICollection<IntegranteResponseDTO>> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
-        var integrantes = await _integranteRepository.GetAllByGrupoToken(grupoToken);
+        var integrantes = await _integranteRepository.GetAllByGrupoToken(grupoToken, deleted);
         var responseDto = new List<IntegranteResponseDTO>();
         foreach (var integrante in integrantes)
         {
