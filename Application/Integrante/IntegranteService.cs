@@ -83,7 +83,8 @@ public class IntegranteService
         {
             IntegranteToken = integrante.Token,
             Usuario = usuarioDto,
-            GrupoToken = grupoToken
+            GrupoToken = grupoToken,
+            DeletedAt =  integrante.DeletedAt,
             //TODO adicionar compromissos
         };
         

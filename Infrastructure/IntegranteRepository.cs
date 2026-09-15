@@ -40,10 +40,30 @@ public class IntegranteRepository : IIntegranteRepository
         return integrantes;
     }
 
+    public async Task<Integrante> GetByToken(string integranteToken)
+    {
+        var integrante = await _dbContext.Integrantes
+            .Include(i => i.Grupo)
+            .FirstOrDefaultAsync(i => i.Token == integranteToken);
+        return integrante;
+    }
+
     public async Task<Integrante> Create(Integrante integrante)
     {
         var newIntegrante = _dbContext.Integrantes.Add(integrante);
         await _dbContext.SaveChangesAsync();
         return newIntegrante.Entity;
+    }
+
+    public async Task<Integrante> Delete(Integrante integrante)
+    {
+        if (integrante.DeletedAt is null)
+        {
+            integrante.DeletedAt = DateTime.UtcNow;
+            _dbContext.Integrantes.Update(integrante);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        return integrante;
     }
 }

@@ -89,4 +89,18 @@ public class GrupoController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpDelete("{grupoToken}/integrantes/{integranteToken}")]
+    public async Task<IActionResult> RemoveIntegrante(string grupoToken, string integranteToken)
+    {
+        try
+        {
+            var responseDeto = await _grupoService.RemoveIntegrante(grupoToken, integranteToken);
+            return  Ok(responseDeto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

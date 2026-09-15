@@ -101,9 +101,25 @@ public class GrupoService
         grupo.Descricao = updateGrupoRequestDto.Descricao ?? grupo.Descricao;
         
         await _grupoRepository.Update(grupo);
+     
+        var responseDto = await convertGrupoToResponseDto(grupo);
+        return responseDto;
+    }
+
+    public async Task<GrupoResponseDTO> RemoveIntegrante(string grupoToken, string integranteToken)
+    {
+        var integrante = await _integranteRepository.GetByToken(integranteToken);
+        await _integranteRepository.Delete(integrante);
         
+        var grupo = integrante.Grupo;
+        var responseDto = await convertGrupoToResponseDto(grupo);
+        return responseDto;
+    }
+
+    private async Task<GrupoResponseDTO> convertGrupoToResponseDto(Grupo grupo)
+    {
         //updates serão feitos apenas em integrantes ativos
-        var integrantes = await _integranteService.GetAllByGrupoToken(grupoToken, deleted: false);
+        var integrantes = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted: false);
 
         var grupoResponseDto = new GrupoResponseDTO
         {
@@ -115,4 +131,12 @@ public class GrupoService
         
         return grupoResponseDto;
     }
+
+    
+    //TODO refatorar criação de integrantes
+    /*private async Task<List<IntegranteResponseDTO>> addIntegrantesToGrupo(
+        CreateIntegranteRequestDTO createIntegranteRequestDto)
+    {
+        
+    }*/
 }
