@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Grupo.DTOs;
+using TribeWallet.Application.Integrante;
+using TribeWallet.Infrastructure;
 
 namespace TribeWallet.Presentation;
 
@@ -10,11 +12,13 @@ namespace TribeWallet.Presentation;
 [Authorize]
 public class GrupoController : ControllerBase
 {
-    private readonly GrupoService _service;
+    private readonly GrupoService _grupoService;
+    private readonly IntegranteService _integranteService;
 
-    public GrupoController(GrupoService service)
+    public GrupoController(GrupoService grupoService, IntegranteService integranteService)
     {
-        _service = service;
+        _grupoService = grupoService;
+        _integranteService = integranteService;
     }
 
     [HttpGet("{usuarioToken}")]
@@ -22,7 +26,7 @@ public class GrupoController : ControllerBase
     {
         try
         {
-            var responseDto = await _service.GetAllByUsuarioToken(usuarioToken, deleted);
+            var responseDto = await _grupoService.GetAllByUsuarioToken(usuarioToken, deleted);
             return Ok(responseDto);
         }
         catch (Exception e)
@@ -36,7 +40,7 @@ public class GrupoController : ControllerBase
     {
         try
         {
-            var responseDto = await _service.Create(requestDto);
+            var responseDto = await _grupoService.Create(requestDto);
             return Ok(responseDto);
         }
         catch (Exception e)
@@ -50,7 +54,7 @@ public class GrupoController : ControllerBase
     {
         try
         {
-            await _service.Delete(grupoToken);
+            await _grupoService.Delete(grupoToken);
             return NoContent();
         }
         catch (Exception e)
@@ -64,10 +68,23 @@ public class GrupoController : ControllerBase
     {
         try
         {
-            var responseDto = await _service.Update(requestDto, grupoToken);
+            var responseDto = await _grupoService.Update(requestDto, grupoToken);
             return Ok(responseDto);
         }
         catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpPut("{grupoToken}/integrantes")]
+    public async Task<IActionResult> AddIntegrantes([FromBody] List<CreateIntegranteRequestDTO> requestDto, string grupoToken)
+    {
+        try
+        {
+            var responseDto = await _integranteService.AddIntegranteToGrupo(requestDto, grupoToken);
+            return Ok(responseDto);
+        } catch (Exception e)
         {
             return BadRequest(e.Message);
         }

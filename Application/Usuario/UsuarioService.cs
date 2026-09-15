@@ -100,9 +100,36 @@ public class UsuarioService
         var usuario =  await _repository.GetByToken(token);
         return usuario;
     }
+
+    public async Task<List<UsuarioResponseDTO>> GetByNome(string nome)
+    {
+        var usuarios = await  _repository.GetByNome(nome);
+        var responseDtoList = new List<UsuarioResponseDTO>();
+
+        foreach (var usuario in usuarios)
+        {
+            var responseDto = ConvertUsuarioToResponseDto(usuario);
+            responseDtoList.Add(responseDto);
+        }
+
+        return responseDtoList;
+    }
     private static string HashSenha(string senha)
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
     }
-    
+
+    private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
+    {
+        var reponseDto = new UsuarioResponseDTO
+        {
+            UsuarioToken = usuario.Token,
+            Nome = usuario.Nome,
+            Sobrenome = usuario.Sobrenome,
+            Email = usuario.Email,
+            Username = usuario.Username
+        };
+
+        return reponseDto;
+    }
 }

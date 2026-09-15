@@ -74,7 +74,7 @@ public class GrupoService
                 
                 //persiste integrante no banco
                 newIntegrante = await _integranteRepository.Create(newIntegrante);
-                var integranteResponseDto = _integranteService.ConvertIntegranteToDto(newIntegrante, grupo.Token);
+                var integranteResponseDto = _integranteService.ConvertIntegranteToResponseDto(newIntegrante, grupo.Token);
                 
                 integranteResponseDtoList.Add(integranteResponseDto);
             }
