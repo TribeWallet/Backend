@@ -66,14 +66,14 @@ public class UsuarioService
         return loginResponseDto;
     }
 
-    public async Task<UsuarioResponseDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
-        usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
-        usuario.Sobrenome = editUsuarioDto.Sobrenome ?? usuario.Sobrenome;
-        usuario.Username = editUsuarioDto.Username ?? usuario.Username;
-        usuario.Imagem = editUsuarioDto.Imagem ?? usuario.Imagem;
-        usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
+        usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
+        usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
+        usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
+        usuario.Imagem = updateUsuarioRequestDto.Imagem ?? usuario.Imagem;
+        usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
         var responseDto = new UsuarioResponseDTO

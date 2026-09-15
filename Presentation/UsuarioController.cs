@@ -43,11 +43,11 @@ public class UsuarioController: ControllerBase
 
     [Authorize]
     [HttpPut("{usuarioToken}")]
-    public async Task<IActionResult> UpdateUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<IActionResult> UpdateUsuario([FromBody] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         try
         {
-            var responseDto =  await _usuarioService.Update(editUsuarioDto, usuarioToken);
+            var responseDto =  await _usuarioService.Update(updateUsuarioRequestDto, usuarioToken);
             return  Ok(responseDto);
         }
         catch (Exception e)
