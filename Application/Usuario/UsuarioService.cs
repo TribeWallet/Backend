@@ -16,9 +16,10 @@ public class UsuarioService
         _jwtTokenService = jwtTokenService;
     }
     
-    public async Task<IEnumerable<Usuario>> GetAll()
+    public async Task<IEnumerable<UsuarioResponseDTO>> GetAll()
     {
-        return await _repository.GetAll();
+        var usuarios = await _repository.GetAll();
+        return usuarios.Select(ConvertToDto).ToList();
     }
 
     public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
@@ -33,34 +34,17 @@ public class UsuarioService
             HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
         usuario = await _repository.Create(usuario);
-
-        var usuarioResponseDto = new UsuarioResponseDTO
-        {
-            UsuarioToken = usuario.Token,
-            Nome = usuario.Nome,
-            Sobrenome = usuario.Sobrenome,
-            Email = usuario.Email,
-            Username = usuario.Username,
-        };
-        return usuarioResponseDto;
+        return ConvertToDto(usuario);
     }
 
     public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDto)
     {
         var usuario = await _repository.Login(loginRequestDto);
         var jwtToken = _jwtTokenService.GenerateToken(usuario);
-        var responseDto = new UsuarioResponseDTO
-        {
-            UsuarioToken = usuario.Token,
-            Nome = usuario.Nome,
-            Sobrenome = usuario.Sobrenome,
-            Email = usuario.Email,
-            Username = usuario.Username,
-        };
 
         var loginResponseDto = new LoginResponseDTO
         {
-            UsuarioResponseDto = responseDto,
+            UsuarioResponseDto = ConvertToDto(usuario),
             JwtToken = jwtToken,
         };
         return loginResponseDto;
@@ -76,16 +60,7 @@ public class UsuarioService
         usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
-        var responseDto = new UsuarioResponseDTO
-        {
-            UsuarioToken = newUsuario.Token,
-            Nome = newUsuario.Nome,
-            Sobrenome = newUsuario.Sobrenome,
-            Email = newUsuario.Email,
-            Username = newUsuario.Username
-        };
-        
-        return responseDto;
+        return ConvertToDto(newUsuario);
     }
 
     /// <summary>Marca o usuário como excluído. O registro fica no banco com a data em DeletedAt.</summary>
@@ -100,6 +75,19 @@ public class UsuarioService
         var usuario =  await _repository.GetByToken(token);
         return usuario;
     }
+    private static UsuarioResponseDTO ConvertToDto(Usuario usuario)
+    {
+        return new UsuarioResponseDTO
+        {
+            UsuarioToken = usuario.Token,
+            Nome = usuario.Nome,
+            Sobrenome = usuario.Sobrenome,
+            Email = usuario.Email,
+            Username = usuario.Username,
+            DeletedAt = usuario.DeletedAt
+        };
+    }
+
     private static string HashSenha(string senha)
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
