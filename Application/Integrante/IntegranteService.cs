@@ -99,7 +99,8 @@ public class IntegranteService
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
-            Username = usuario.Username
+            Username = usuario.Username,
+            DeletedAt = usuario.DeletedAt
         };
         
         return usuarioDto;
