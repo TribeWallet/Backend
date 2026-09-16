@@ -7,4 +7,7 @@ public class UsuarioResponseDTO
     public string Sobrenome { get; set; }
     public string Email { get; set; }
     public string Username { get; set; }
+
+    /// <summary>Preenchido quando o usuário foi excluído (soft delete). Quem consome decide o que mostrar.</summary>
+    public DateTime? DeletedAt { get; set; }
 }
