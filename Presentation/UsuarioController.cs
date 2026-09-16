@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,16 +13,16 @@ namespace TribeWallet.Presentation;
 [ApiController]
 public class UsuarioController: ControllerBase
 {
-    private readonly UsuarioService _service;
-    public UsuarioController(UsuarioService service)
+    private readonly UsuarioService _usuarioService;
+    public UsuarioController(UsuarioService usuarioService)
     {
-        _service = service;
+        _usuarioService = usuarioService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(bool deleted = false)
     {
-        var usuarios = await _service.GetAll();
+        var usuarios = await _usuarioService.GetAll(deleted);
         return Ok(usuarios);
     }
 
@@ -31,7 +32,7 @@ public class UsuarioController: ControllerBase
     {
         try
         {
-            await _service.Delete(usuarioToken);
+            await _usuarioService.Delete(usuarioToken);
             return NoContent();
         }
         catch (Exception e)
@@ -42,11 +43,26 @@ public class UsuarioController: ControllerBase
 
     [Authorize]
     [HttpPut("{usuarioToken}")]
-    public async Task<IActionResult> UpdateUsuario([FromBody] EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<IActionResult> UpdateUsuario([FromBody] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         try
         {
-            var responseDto =  await _service.Update(editUsuarioDto, usuarioToken);
+            var responseDto =  await _usuarioService.Update(updateUsuarioRequestDto, usuarioToken);
+            return  Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpGet("{nome}")]
+    public async Task<IActionResult> GetUsuarioByNome(string nome)
+    {
+        try
+        {
+            var responseDto = await _usuarioService.GetByNome(nome);
             return  Ok(responseDto);
         }
         catch (Exception e)

@@ -22,9 +22,25 @@ public class GrupoRepository : IGrupoRepository
         return grupo ?? throw new Exception("Grupo não encontrado pelo token informado");
     }
 
-    public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken)
+    public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
     {
-        var grupos = await _dbContext.Grupos
+        List<Grupo> grupos;
+        
+        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
+        if (!deleted)
+        {
+            grupos = await _dbContext.Grupos
+                .Include(g => g.Integrantes)
+                .ThenInclude(i => i.Usuario)
+                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
+                .Where(g => g.DeletedAt == null)
+                .ToListAsync();
+
+            return grupos;
+        }
+        
+        // busca registros ativos e inativos
+        grupos = await _dbContext.Grupos
             .Include(g => g.Integrantes)
             .ThenInclude(i => i.Usuario)
             .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken)).ToListAsync();
