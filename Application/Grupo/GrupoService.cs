@@ -1,5 +1,6 @@
 using TribeWallet.Application.Integrante;
 using TribeWallet.Infrastructure;
+using TribeWallet.Services;
 
 namespace TribeWallet.Application.Grupo;
 using TribeWallet.Domain.Entities;
@@ -10,12 +11,14 @@ public class GrupoService
     private readonly IGrupoRepository _grupoRepository;
     private readonly IIntegranteRepository _integranteRepository;
     private readonly IntegranteService _integranteService;
+    private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
     
-    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService)
+    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService)
     {
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
         _integranteService = integranteService;
+        _grupoIntegranteCommonService = grupoIntegranteCommonService;
     }
 
     public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
@@ -74,7 +77,7 @@ public class GrupoService
                 
                 //persiste integrante no banco
                 newIntegrante = await _integranteRepository.Create(newIntegrante);
-                var integranteResponseDto = _integranteService.ConvertIntegranteToResponseDto(newIntegrante, grupo.Token);
+                var integranteResponseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(newIntegrante);
                 
                 integranteResponseDtoList.Add(integranteResponseDto);
             }
@@ -102,7 +105,7 @@ public class GrupoService
         
         await _grupoRepository.Update(grupo);
      
-        var responseDto = await convertGrupoToResponseDto(grupo);
+        var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
     }
 
@@ -112,24 +115,8 @@ public class GrupoService
         await _integranteRepository.Delete(integrante);
         
         var grupo = integrante.Grupo;
-        var responseDto = await convertGrupoToResponseDto(grupo);
+        var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
-    }
-
-    private async Task<GrupoResponseDTO> convertGrupoToResponseDto(Grupo grupo)
-    {
-        //updates serão feitos apenas em integrantes ativos
-        var integrantes = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted: false);
-
-        var grupoResponseDto = new GrupoResponseDTO
-        {
-            GrupoToken = grupo.Token,
-            Nome = grupo.Nome,
-            Descricao = grupo.Descricao,
-            Integrantes = integrantes
-        };
-        
-        return grupoResponseDto;
     }
 
     

@@ -96,6 +96,8 @@ builder.Services.AddScoped<GrupoService>();
 builder.Services.AddScoped<IIntegranteRepository, IntegranteRepository>();
 builder.Services.AddScoped<IntegranteService>();
 builder.Services.AddScoped<ICompromissoFinanceiroRepository, CompromissoFinanceiroRepository>();
+builder.Services.AddScoped<CompromissoFinanceiroService>();
+builder.Services.AddScoped<GrupoIntegranteCommonService>();
 
 
 var app = builder.Build();

@@ -13,8 +13,8 @@ public class CompromissoFinanceiroResponseDTO
     public decimal ValorTotal { get; set; }
     public DateTime Data { get; set; }
     public TipoDivisao TipoDivisao { get; set; }
-    public string? ImagemUrl { get; set; }
+    public string? Imagem { get; set; }
     public string Categoria { get; set; }
-    public ICollection<IntegranteCompromissoResponseDTO> Participacoes { get; set; } = [];
+    public ICollection<IntegranteCompromissoResumoDTO> Participacoes { get; set; } = [];
     public ICollection<RelatorioResponseDTO>  Relatorios { get; set; } = [];
 }

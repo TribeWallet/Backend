@@ -16,9 +16,14 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
 
     public async Task<ICollection<CompromissoFinanceiro>> GetAllByIntegranteToken(string integranteToken)
     {
-        var compromissos = await _dbContext.CompromissosFinanceiros.Include(c => c.Participacoes)
-            .ThenInclude(p => p.Integrante)
-            .Where(c => c.Participacoes.Any(p => p.Integrante.Token == integranteToken)).ToListAsync();
+        var compromissos = await _dbContext.CompromissosFinanceiros
+            .Where(c => c.Participacoes
+                .Any(p => p.Integrante.Token == integranteToken))
+            .Include(c => c.Grupo)
+            .Include(c => c.Participacoes)
+                .ThenInclude(p => p.Integrante)
+                    .ThenInclude(i => i.Usuario)
+            .ToListAsync();
         
         return compromissos;
     }
