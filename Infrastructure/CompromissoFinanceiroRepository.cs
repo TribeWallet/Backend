@@ -14,12 +14,17 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
         _dbContext = dbContext;
     }
 
-    public async Task<CompromissoFinanceiro> Create(CompromissoFinanceiro compromissoFinanceiro)
+    public async Task<CompromissoFinanceiro> GetByToken(string token)
     {
-        var compromisso = _dbContext.CompromissosFinanceiros.Add(compromissoFinanceiro);
-        await _dbContext.SaveChangesAsync();
+        var compromisso = await _dbContext.CompromissosFinanceiros
+            .Where(c => c.Token == token)
+            .Include(c => c.Grupo)
+            .Include(c => c.Participacoes)
+            .ThenInclude(p => p.Integrante)
+            .ThenInclude(i => i.Usuario)
+            .FirstOrDefaultAsync();
 
-        return compromisso.Entity;
+        return compromisso;
     }
 
     public async Task<ICollection<CompromissoFinanceiro>> GetAllByIntegranteToken(string integranteToken)
@@ -47,5 +52,21 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
             .ToListAsync();
         
         return compromissos;
+    }
+    
+    public async Task<CompromissoFinanceiro> Create(CompromissoFinanceiro compromissoFinanceiro)
+    {
+        var compromisso = _dbContext.CompromissosFinanceiros.Add(compromissoFinanceiro);
+        await _dbContext.SaveChangesAsync();
+
+        return compromisso.Entity;
+    }
+
+    public async Task<CompromissoFinanceiro> Update(CompromissoFinanceiro compromissoFinanceiro)
+    {
+        var newCompromisso = _dbContext.CompromissosFinanceiros.Update(compromissoFinanceiro);
+        await _dbContext.SaveChangesAsync();
+        
+        return newCompromisso.Entity;
     }
 }

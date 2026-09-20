@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
+using TribeWallet.Application.IntegranteCompromisso.DTOs;
 
 namespace TribeWallet.Presentation;
 
@@ -19,7 +20,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
         _compromissoFinanceiroService = compromissoFinanceiroService;
     }
 
-    /*[HttpGet("integrantes/{integranteToken}")]
+    [HttpGet("integrantes/{integranteToken}")]
     public async Task<IActionResult> GetAllByIntegranteToken(string integranteToken)
     {
         try
@@ -31,7 +32,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
         {
             return BadRequest(e.Message);
         }
-    }*/
+    }
 
     [HttpGet("{grupoToken}")]
     public async Task<IActionResult> GetAllByGrupoToken(string grupoToken)
@@ -48,11 +49,25 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
     
     [HttpPost("{grupoToken}")]
-    public async Task<IActionResult> AddCompromisso([FromBody] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
+    public async Task<IActionResult> CreateCompromissoFinanceiro([FromBody] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
     {
         try
         {
             var responseDto = await _compromissoFinanceiroService.CreateCompromissoFinanceiro(compromissoFinanceiroRequestDto, grupoToken);
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("{compromissoToken}/integrantes")]
+    public async Task<IActionResult> AddIntegrantes([FromBody] List<CreateIntegranteCompromissoRequestDTO> requestDto, string compromissoToken)
+    {
+        try
+        {
+            var responseDto = await _compromissoFinanceiroService.AddIntegrante(requestDto, compromissoToken);
             return Ok(responseDto);
         }
         catch (Exception e)

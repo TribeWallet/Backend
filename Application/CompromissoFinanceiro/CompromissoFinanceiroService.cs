@@ -1,5 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
+using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.Grupo;
-using TribeWallet.Application.Grupo.DTOs;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.IntegranteCompromisso.DTOs;
@@ -8,8 +9,6 @@ using TribeWallet.Services;
 
 namespace TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Domain.Entities;
-using TribeWallet.Application.Compromisso.DTOs;
-
 
 public class CompromissoFinanceiroService
 {
@@ -105,8 +104,34 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
+    public async Task<CompromissoFinanceiroResponseDTO> AddIntegrante(List<CreateIntegranteCompromissoRequestDTO> requestDtoList, string compromissoToken)
+    {
+        var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+
+        foreach (var requestDto in requestDtoList)
+        {
+            var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
+            var integranteCompromisso = new IntegranteCompromisso
+            {
+                IntegranteId = integrante.IntegranteId,
+                CompromissoId = compromisso.CompromissoFinanceiroId,
+                ValorDevedor = requestDto.ValorDevedor,
+                ValorPago = requestDto.ValorPago,
+                Integrante = integrante,
+                Compromisso = compromisso
+            };
+            compromisso.Participacoes.Add(integranteCompromisso);
+        }
+        compromisso = await _compromissoFinanceiroRepository.Update(compromisso);
+        
+        var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
+
+        return responseDto;
+    }
+
+    #region CONVERSÕES
     public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
-        IntegranteCompromisso integranteCompromisso)
+        Domain.Entities.IntegranteCompromisso integranteCompromisso)
     {
         var responseDto = new IntegranteCompromissoResumoDTO()
         {
@@ -122,7 +147,7 @@ public class CompromissoFinanceiroService
 
 
     public async Task<CompromissoFinanceiroResponseDTO> ConvertCompromissoToResponseDto(
-        CompromissoFinanceiro compromisso, bool parcial)
+        Domain.Entities.CompromissoFinanceiro compromisso, bool parcial)
     {
         var participacoes = new List<IntegranteCompromissoResumoDTO>();
         foreach (var participacao in compromisso.Participacoes)
@@ -152,4 +177,5 @@ public class CompromissoFinanceiroService
 
         return responseDto;
     }
+    #endregion
 }
