@@ -16,9 +16,9 @@ public class UsuarioService
         _jwtTokenService = jwtTokenService;
     }
     
-    public async Task<IEnumerable<UsuarioResponseDTO>> GetAll()
+    public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted)
     {
-        var usuarios = await _repository.GetAll();
+        var usuarios = await _repository.GetAll(deleted);
         return usuarios.Select(ConvertToDto).ToList();
     }
 
