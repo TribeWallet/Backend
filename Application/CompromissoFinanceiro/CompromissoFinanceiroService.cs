@@ -43,9 +43,9 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
-    public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByGrupoToken(string grupoToken)
+    public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
-        var compromissos = await _compromissoFinanceiroRepository.GetAllByGrupoToken(grupoToken);
+        var compromissos = await _compromissoFinanceiroRepository.GetAllByGrupoToken(grupoToken, deleted);
 
         var responseDto = new List<CompromissoFinanceiroResponseDTO>();
 
@@ -104,6 +104,12 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
+    public async Task DeleteCompromissoFinanceiro(string compromissoToken)
+    {
+        var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+
+        await _compromissoFinanceiroRepository.Delete(compromisso);
+    }
     public async Task<CompromissoFinanceiroResponseDTO> AddIntegrante(List<CreateIntegranteCompromissoRequestDTO> requestDtoList, string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
@@ -129,6 +135,12 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
+    public async Task RemoveIntegrante(string integranteCompromissoToken)
+    {
+        var integranteCompromisso = await _integranteCompromissoRepository.GetByToken(integranteCompromissoToken);
+        
+        await _integranteCompromissoRepository.Delete(integranteCompromisso);
+    }
     #region CONVERSÕES
     public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
         Domain.Entities.IntegranteCompromisso integranteCompromisso)
@@ -138,7 +150,8 @@ public class CompromissoFinanceiroService
             IntegranteCompromissoToken = integranteCompromisso.Token,
             Integrante = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(integranteCompromisso.Integrante),
             ValorDevedor = integranteCompromisso.ValorDevedor,
-            ValorPago = integranteCompromisso.ValorPago
+            ValorPago = integranteCompromisso.ValorPago,
+            DeletedAt = integranteCompromisso.DeletedAt
             //TODO PAGAMENTOS
         };
 
@@ -167,6 +180,7 @@ public class CompromissoFinanceiroService
             Imagem = compromisso.Imagem,
             Categoria = compromisso.Categoria,
             Participacoes = participacoes,
+            DeletedAt = compromisso.DeletedAt
             //TODO RELATORIOS
         };
 

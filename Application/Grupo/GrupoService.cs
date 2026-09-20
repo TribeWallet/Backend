@@ -1,6 +1,7 @@
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Infrastructure;
 using TribeWallet.Services;
 
@@ -12,17 +13,19 @@ public class GrupoService
 {
     private readonly IGrupoRepository _grupoRepository;
     private readonly IIntegranteRepository _integranteRepository;
+    private readonly IIntegranteCompromissoRepository  _integranteCompromissoRepository;
     private readonly IntegranteService _integranteService;
     private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
     private readonly CompromissoFinanceiroService _compromissoFinanceiroService;
     
-    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService, CompromissoFinanceiroService compromissoFinanceiroService)
+    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService, CompromissoFinanceiroService compromissoFinanceiroService, IIntegranteCompromissoRepository integranteCompromissoRepository)
     {
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
         _integranteService = integranteService;
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
         _compromissoFinanceiroService = compromissoFinanceiroService;
+        _integranteCompromissoRepository = integranteCompromissoRepository;
     }
 
     public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
@@ -125,9 +128,12 @@ public class GrupoService
     public async Task<GrupoResponseDTO> RemoveIntegrante(string grupoToken, string integranteToken)
     {
         var integrante = await _integranteRepository.GetByToken(integranteToken);
+        var grupo = integrante.Grupo;
+        var integranteCompromisso = await _integranteCompromissoRepository.GetByIntegranteToken(integranteToken);
+        
+        await _integranteCompromissoRepository.Delete(integranteCompromisso);
         await _integranteRepository.Delete(integrante);
         
-        var grupo = integrante.Grupo;
         var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
     }

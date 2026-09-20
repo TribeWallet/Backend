@@ -64,7 +64,6 @@ public class IntegranteRepository : IIntegranteRepository
             _dbContext.Integrantes.Update(integrante);
             await _dbContext.SaveChangesAsync();
         }
-
         return integrante;
     }
 }

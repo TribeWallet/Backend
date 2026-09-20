@@ -35,11 +35,11 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
 
     [HttpGet("{grupoToken}")]
-    public async Task<IActionResult> GetAllByGrupoToken(string grupoToken)
+    public async Task<IActionResult> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
         try
         {
-            var responseDto = await _compromissoFinanceiroService.GetAllByGrupoToken(grupoToken);
+            var responseDto = await _compromissoFinanceiroService.GetAllByGrupoToken(grupoToken,deleted);
             return Ok(responseDto);
         }
         catch (Exception e)
@@ -69,6 +69,34 @@ public class CompromissoFinanceiroControlller : ControllerBase
         {
             var responseDto = await _compromissoFinanceiroService.AddIntegrante(requestDto, compromissoToken);
             return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpDelete("integrantes/{integranteCompromissoToken}")]
+    public async Task<IActionResult> RemoveIntegrantes(string integranteCompromissoToken)
+    {
+        try
+        {
+            await _compromissoFinanceiroService.RemoveIntegrante(integranteCompromissoToken);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpDelete("{compromissoToken}")]
+    public async Task<IActionResult> DeleteCompromissoFinanceiro(string compromissoToken)
+    {
+        try
+        {
+            await _compromissoFinanceiroService.DeleteCompromissoFinanceiro(compromissoToken);
+            return NoContent();
         }
         catch (Exception e)
         {

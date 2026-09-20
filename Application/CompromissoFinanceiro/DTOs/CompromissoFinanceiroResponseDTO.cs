@@ -8,13 +8,14 @@ namespace TribeWallet.Application.Compromisso.DTOs;
 public class CompromissoFinanceiroResponseDTO
 {
     public string CompromissoFinanceiroToken { get; set; }
-    public GrupoResponseDTO? Grupo { get; set; }
     public string Titulo { get; set; }
     public decimal ValorTotal { get; set; }
     public DateTime Data { get; set; }
     public TipoDivisao TipoDivisao { get; set; }
     public string? Imagem { get; set; }
     public string Categoria { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public GrupoResponseDTO? Grupo { get; set; }
     public ICollection<IntegranteCompromissoResumoDTO> Participacoes { get; set; } = [];
     public ICollection<RelatorioResponseDTO>  Relatorios { get; set; } = [];
 }
