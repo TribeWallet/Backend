@@ -49,8 +49,9 @@ public class GrupoService
                 GrupoToken =  grupo.Token,
                 Nome = grupo.Nome,
                 Descricao = grupo.Descricao,
-                Integrantes = integrantesDto,
-                Compromissos = compromissosResponseDtoList
+                Compromissos = compromissosResponseDtoList,
+                DeletedAt = grupo.DeletedAt,
+                Integrantes = integrantesDto
             };
             responseDto.Add(grupoDto);
         }
@@ -106,7 +107,9 @@ public class GrupoService
             GrupoToken = grupo.Token,
             Nome = grupo.Nome,
             Descricao = grupo.Descricao,
-            Integrantes =  integranteResponseDtoList 
+            DeletedAt = grupo.DeletedAt,
+            Integrantes =  integranteResponseDtoList
+            //TODO adicionar compromissos
         };
         return responseDto;
     }

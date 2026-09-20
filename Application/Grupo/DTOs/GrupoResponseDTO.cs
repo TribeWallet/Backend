@@ -10,6 +10,9 @@ public class GrupoResponseDTO
     public string Nome { get; set; }
 
     public string? Descricao { get; set; }
+
+    /// <summary>Preenchido quando o grupo foi excluído (soft delete). Quem consome decide o que mostrar.</summary>
+    public DateTime? DeletedAt { get; set; }
     public ICollection<IntegranteResponseDTO> Integrantes { get; set; } = [];
     public ICollection<CompromissoFinanceiroResponseDTO> Compromissos { get; set; } = [];
 }
