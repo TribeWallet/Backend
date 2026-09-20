@@ -67,7 +67,7 @@ public class CompromissoFinanceiroService
         {
             GrupoId = grupo.GrupoId,
             Titulo = requestDto.Titulo,
-            ValorTotal = requestDto.ValorToral,
+            ValorTotal = requestDto.ValorTotal,
             Data = requestDto.Data,
             TipoDivisao = requestDto.TipoDivisao,
             Imagem = requestDto.Imagem,
@@ -104,6 +104,23 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
+    public async Task<CompromissoFinanceiroResponseDTO> UpdateCompromissoFinanceiro(
+        UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
+    {
+        var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+        compromisso.Titulo = requestDto.Titulo ?? compromisso.Titulo;
+        compromisso.ValorTotal = requestDto.ValorTotal ?? compromisso.ValorTotal;
+        compromisso.Data = requestDto.Data ?? compromisso.Data;
+        compromisso.TipoDivisao = requestDto.TipoDivisao ?? compromisso.TipoDivisao;
+        compromisso.Imagem = requestDto.Imagem ?? compromisso.Imagem;
+        compromisso.Categoria = requestDto.Categoria ?? compromisso.Categoria;
+        
+        await _compromissoFinanceiroRepository.Update(compromisso);
+
+        var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
+        
+        return  responseDto;
+    }
     public async Task DeleteCompromissoFinanceiro(string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
@@ -141,6 +158,7 @@ public class CompromissoFinanceiroService
         
         await _integranteCompromissoRepository.Delete(integranteCompromisso);
     }
+ 
     #region CONVERSÕES
     public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
         Domain.Entities.IntegranteCompromisso integranteCompromisso)

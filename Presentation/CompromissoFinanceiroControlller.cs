@@ -61,6 +61,20 @@ public class CompromissoFinanceiroControlller : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpPut("{compromissoToken}")]
+    public async Task<IActionResult> UpdateCompromisso([FromBody] UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
+    {
+        try
+        {
+            var responseDto = await _compromissoFinanceiroService.UpdateCompromissoFinanceiro(requestDto, compromissoToken);
+            return Ok(responseDto);
+        } catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
 
     [HttpPost("{compromissoToken}/integrantes")]
     public async Task<IActionResult> AddIntegrantes([FromBody] List<CreateIntegranteCompromissoRequestDTO> requestDto, string compromissoToken)
@@ -75,7 +89,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
             return BadRequest(e.Message);
         }
     }
-
+    
     [HttpDelete("integrantes/{integranteCompromissoToken}")]
     public async Task<IActionResult> RemoveIntegrantes(string integranteCompromissoToken)
     {
