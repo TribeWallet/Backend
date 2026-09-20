@@ -14,10 +14,35 @@ public class UsuarioRepository : IUsuarioRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<Usuario>> GetAll()
+    
+    //TODO criar coluna calculada "Nome Completo", essa query não está funcionando como deveria
+    public async Task<IEnumerable<Usuario>> GetByNome(string nome)
     {
-        var usuarios = await _dbContext.Usuarios.ToListAsync();
+        var usuarios = await _dbContext.Usuarios
+            .Where(u => u.Nome.ToLower().Contains(nome.ToLower()) 
+                        || u.Sobrenome.ToLower().Contains(nome.ToLower()))
+            .ToListAsync();
+
         return usuarios;
+    }
+
+    public async Task<IEnumerable<Usuario>> GetAll(bool deleted)
+    {
+        List<Usuario> usuarios;
+        
+        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
+        if (!deleted)
+        {
+            usuarios = await _dbContext.Usuarios
+                .Where(u => u.DeletedAt == null).ToListAsync();
+            
+            return usuarios;
+        }
+        
+        // busca registros ativos e inativos
+        usuarios = await _dbContext.Usuarios.ToListAsync();
+        return usuarios;
+        
     }
 
     public async Task<Usuario> Create(Usuario usuario)

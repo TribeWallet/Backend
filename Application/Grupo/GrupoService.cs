@@ -18,13 +18,13 @@ public class GrupoService
         _integranteService = integranteService;
     }
 
-    public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token)
+    public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
     {
-        var grupos = await _grupoRepository.GetAllByUsuarioToken(token);
+        var grupos = await _grupoRepository.GetAllByUsuarioToken(token, deleted);
         var responseDto = new List<GrupoResponseDTO>();
         foreach (var grupo in grupos)
         {
-            var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token);
+            var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted);
             var grupoDto = new GrupoResponseDTO
             {
                 GrupoToken =  grupo.Token,
@@ -75,7 +75,7 @@ public class GrupoService
                 
                 //persiste integrante no banco
                 newIntegrante = await _integranteRepository.Create(newIntegrante);
-                var integranteResponseDto = _integranteService.ConvertIntegranteToDto(newIntegrante, grupo.Token);
+                var integranteResponseDto = _integranteService.ConvertIntegranteToResponseDto(newIntegrante, grupo.Token);
                 
                 integranteResponseDtoList.Add(integranteResponseDto);
             }
@@ -103,7 +103,25 @@ public class GrupoService
         grupo.Descricao = updateGrupoRequestDto.Descricao ?? grupo.Descricao;
         
         await _grupoRepository.Update(grupo);
-        var integrantes = await _integranteService.GetAllByGrupoToken(grupoToken);
+     
+        var responseDto = await convertGrupoToResponseDto(grupo);
+        return responseDto;
+    }
+
+    public async Task<GrupoResponseDTO> RemoveIntegrante(string grupoToken, string integranteToken)
+    {
+        var integrante = await _integranteRepository.GetByToken(integranteToken);
+        await _integranteRepository.Delete(integrante);
+        
+        var grupo = integrante.Grupo;
+        var responseDto = await convertGrupoToResponseDto(grupo);
+        return responseDto;
+    }
+
+    private async Task<GrupoResponseDTO> convertGrupoToResponseDto(Grupo grupo)
+    {
+        //updates serão feitos apenas em integrantes ativos
+        var integrantes = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted: false);
 
         var grupoResponseDto = new GrupoResponseDTO
         {
@@ -116,4 +134,12 @@ public class GrupoService
         
         return grupoResponseDto;
     }
+
+    
+    //TODO refatorar criação de integrantes
+    /*private async Task<List<IntegranteResponseDTO>> addIntegrantesToGrupo(
+        CreateIntegranteRequestDTO createIntegranteRequestDto)
+    {
+        
+    }*/
 }

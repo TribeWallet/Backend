@@ -50,14 +50,14 @@ public class UsuarioService
         return loginResponseDto;
     }
 
-    public async Task<UsuarioResponseDTO> Update(EditUsuarioDTO editUsuarioDto, string usuarioToken)
+    public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
-        usuario.Nome = editUsuarioDto.Nome ?? usuario.Nome;
-        usuario.Sobrenome = editUsuarioDto.Sobrenome ?? usuario.Sobrenome;
-        usuario.Username = editUsuarioDto.Username ?? usuario.Username;
-        usuario.Imagem = editUsuarioDto.Imagem ?? usuario.Imagem;
-        usuario.HashSenha = editUsuarioDto.Senha == null ?  usuario.HashSenha : HashSenha(editUsuarioDto.Senha);
+        usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
+        usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
+        usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
+        usuario.Imagem = updateUsuarioRequestDto.Imagem ?? usuario.Imagem;
+        usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
         return ConvertToDto(newUsuario);
@@ -74,6 +74,20 @@ public class UsuarioService
     {
         var usuario =  await _repository.GetByToken(token);
         return usuario;
+    }
+
+    public async Task<List<UsuarioResponseDTO>> GetByNome(string nome)
+    {
+        var usuarios = await  _repository.GetByNome(nome);
+        var responseDtoList = new List<UsuarioResponseDTO>();
+
+        foreach (var usuario in usuarios)
+        {
+            var responseDto = ConvertUsuarioToResponseDto(usuario);
+            responseDtoList.Add(responseDto);
+        }
+
+        return responseDtoList;
     }
     private static UsuarioResponseDTO ConvertToDto(Usuario usuario)
     {
@@ -92,5 +106,18 @@ public class UsuarioService
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
     }
-    
+
+    private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
+    {
+        var reponseDto = new UsuarioResponseDTO
+        {
+            UsuarioToken = usuario.Token,
+            Nome = usuario.Nome,
+            Sobrenome = usuario.Sobrenome,
+            Email = usuario.Email,
+            Username = usuario.Username
+        };
+
+        return reponseDto;
+    }
 }
