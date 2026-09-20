@@ -44,6 +44,7 @@ public class IntegranteRepository : IIntegranteRepository
     {
         var integrante = await _dbContext.Integrantes
             .Include(i => i.Grupo)
+            .Include(i => i.Usuario)
             .FirstOrDefaultAsync(i => i.Token == integranteToken);
         return integrante;
     }

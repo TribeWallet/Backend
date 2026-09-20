@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Data;
 using TribeWallet.Domain.Entities;
@@ -97,6 +98,7 @@ builder.Services.AddScoped<IIntegranteRepository, IntegranteRepository>();
 builder.Services.AddScoped<IntegranteService>();
 builder.Services.AddScoped<ICompromissoFinanceiroRepository, CompromissoFinanceiroRepository>();
 builder.Services.AddScoped<CompromissoFinanceiroService>();
+builder.Services.AddScoped<IIntegranteCompromissoRepository, IntegranteCompromissoRepository>();
 builder.Services.AddScoped<GrupoIntegranteCommonService>();
 
 

@@ -1,4 +1,5 @@
 using TribeWallet.Application;
+using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Grupo.DTOs;
@@ -29,7 +30,6 @@ public class GrupoIntegranteCommonService
 
         foreach (var integrante in integrantes)
         {
-            
             var integranteDto = ConvertIntegranteToResponseDto(integrante);
             integrantesDto.Add(integranteDto);
         }
@@ -45,7 +45,7 @@ public class GrupoIntegranteCommonService
         return grupoResponseDto;
     }
     
-    public IntegranteResponseDTO ConvertIntegranteToResponseDto(Integrante integrante)
+    public IntegranteResponseDTO ConvertIntegranteToResponseDto(Integrante integrante, bool includeCompromissos = true)
     {
         var usuarioDto = ConvertUsuarioToResponseDto(integrante.Usuario);
         var integranteDto = new IntegranteResponseDTO
@@ -53,8 +53,9 @@ public class GrupoIntegranteCommonService
             IntegranteToken = integrante.Token,
             Usuario = usuarioDto,
             GrupoToken = integrante.Grupo.Token,
-            DeletedAt =  integrante.DeletedAt,
-            //TODO adicionar compromissos
+            DeletedAt = integrante.DeletedAt,
+            //TODO CORRIGIR COMPROMISSOS
+            Compromissos = includeCompromissos == true ? null : null
         };
         
         return integranteDto;

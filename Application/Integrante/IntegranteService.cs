@@ -23,6 +23,13 @@ public class IntegranteService
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
     }
 
+    public async Task<IntegranteResponseDTO> GetByToken(string integranteToken)
+    {
+        var integrante = await _integranteRepository.GetByToken(integranteToken);
+        var responseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(integrante);
+        
+        return responseDto;
+    }
     public async Task<List<IntegranteResponseDTO>> AddIntegranteToGrupo(List<CreateIntegranteRequestDTO> requestDto,
         string grupoToken)
     {
