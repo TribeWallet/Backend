@@ -76,7 +76,7 @@ public class CompromissoFinanceiroService
         };
         await _compromissoFinanceiroRepository.Create(compromisso);
 
-        if (requestDto.Participacoes is not null)
+        if (requestDto.Participacoes.Count > 0)
         {
             foreach (var participacao in requestDto.Participacoes)
             {
@@ -84,17 +84,16 @@ public class CompromissoFinanceiroService
 
                 if (integrante is null)
                     throw new Exception("Integrante não foi encontrado pelo token informado.");
-                
+
                 var integranteCompromisso = new IntegranteCompromisso
                 {
                     IntegranteId = integrante.IntegranteId,
                     CompromissoId = compromisso.CompromissoFinanceiroId,
-                    ValorDevedor = participacao.ValorDevedor,
+                    ValorDevedor = AssignValorDevedor(requestDto, participacao),
                     ValorPago = participacao.ValorPago,
                     Integrante = integrante,
                     Compromisso = compromisso
                 };
-
                 await _integranteCompromissoRepository.Create(integranteCompromisso);
             }
         }
@@ -103,7 +102,8 @@ public class CompromissoFinanceiroService
         
         return responseDto;
     }
-
+    
+    
     public async Task<CompromissoFinanceiroResponseDTO> UpdateCompromissoFinanceiro(
         UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
     {
@@ -114,7 +114,24 @@ public class CompromissoFinanceiroService
         compromisso.TipoDivisao = requestDto.TipoDivisao ?? compromisso.TipoDivisao;
         compromisso.Imagem = requestDto.Imagem ?? compromisso.Imagem;
         compromisso.Categoria = requestDto.Categoria ?? compromisso.Categoria;
-        
+
+        if (requestDto.TipoDivisao != null && requestDto.TipoDivisao != compromisso.TipoDivisao)
+        {
+            var participacoes = compromisso.Participacoes;
+
+            foreach (var participacao in participacoes)
+            {
+                foreach (var participacaoRequest in requestDto.Participacoes)
+                {
+                    if (participacaoRequest.IntegranteToken == participacao.Integrante.Token)
+                    {
+                        /*participacao.ValorDevedor = AssignValorDevedor(compromisso, participacaoRequest);*/
+                    }
+                }
+
+                await _integranteCompromissoRepository.Update(participacao);
+            }
+        }
         await _compromissoFinanceiroRepository.Update(compromisso);
 
         var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
@@ -124,7 +141,11 @@ public class CompromissoFinanceiroService
     public async Task DeleteCompromissoFinanceiro(string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
-
+        foreach (var participacao in compromisso.Participacoes)
+        {
+            var integranteCompromisso = await _integranteCompromissoRepository.GetByIntegranteToken(participacao.Token);
+            await _integranteCompromissoRepository.Delete(integranteCompromisso);
+        }
         await _compromissoFinanceiroRepository.Delete(compromisso);
     }
     public async Task<CompromissoFinanceiroResponseDTO> AddIntegrante(List<CreateIntegranteCompromissoRequestDTO> requestDtoList, string compromissoToken)
@@ -133,17 +154,34 @@ public class CompromissoFinanceiroService
 
         foreach (var requestDto in requestDtoList)
         {
-            var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
-            var integranteCompromisso = new IntegranteCompromisso
+            var existingParticipacao = await _integranteCompromissoRepository.GetByIntegranteToken(requestDto.IntegranteToken);
+            if (existingParticipacao != null)
             {
-                IntegranteId = integrante.IntegranteId,
-                CompromissoId = compromisso.CompromissoFinanceiroId,
-                ValorDevedor = requestDto.ValorDevedor,
-                ValorPago = requestDto.ValorPago,
-                Integrante = integrante,
-                Compromisso = compromisso
-            };
-            compromisso.Participacoes.Add(integranteCompromisso);
+                var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
+                var integranteCompromisso = new IntegranteCompromisso
+                {
+                    IntegranteId = integrante.IntegranteId,
+                    CompromissoId = compromisso.CompromissoFinanceiroId,
+                    ValorDevedor = requestDto.ValorDevedor,
+                    ValorPago = requestDto.ValorPago,
+                    Integrante = integrante,
+                    Compromisso = compromisso
+                };
+                compromisso.Participacoes.Add(integranteCompromisso);
+            }
+        }
+
+        foreach (var participacao in compromisso.Participacoes)
+        {
+            foreach (var requestDto in requestDtoList)
+            {
+                if (requestDto.IntegranteToken == participacao.Integrante.Token)
+                {
+                    /*participacao.ValorDevedor = AssignValorDevedor(compromisso, requestDto);*/
+                }
+            }
+            
+            await _integranteCompromissoRepository.Update(participacao);
         }
         compromisso = await _compromissoFinanceiroRepository.Update(compromisso);
         
@@ -158,10 +196,43 @@ public class CompromissoFinanceiroService
         
         await _integranteCompromissoRepository.Delete(integranteCompromisso);
     }
- 
+    
+    //TODO refatorar funções de calculos, no momento só aceita CreateIntegranteCompromissoRequestDto
+    #region CALCULOS DE VALORES
+    
+    private decimal AssignValorDevedor(CreateCompromissoFinanceiroRequestDTO compromisso, CreateIntegranteCompromissoRequestDTO integranteCompromissoRequestDto)
+    {
+        var tipoDivisao = compromisso.TipoDivisao;
+        switch (tipoDivisao)
+        {
+            case TipoDivisao.Igual:
+                return AssignValorIgual(compromisso);
+            case TipoDivisao.Porcentagem:
+                return AssignValorIgual(compromisso);
+            case TipoDivisao.ValorExato:
+                return AssignValorExato(integranteCompromissoRequestDto);
+            case TipoDivisao.Proporcional:
+                return AssignValorIgual(compromisso);
+            default:
+                throw new Exception("selecione um tipo de divisão válido (1 a 4).");
+        }
+    }
+
+    private decimal AssignValorExato(CreateIntegranteCompromissoRequestDTO requestDto)
+    {
+        return requestDto.ValorDevedor;
+    }
+
+    private decimal AssignValorIgual(CreateCompromissoFinanceiroRequestDTO compromisso)
+    {
+        return compromisso.ValorTotal / compromisso.Participacoes.Count;
+    }
+    
+    #endregion
+    
     #region CONVERSÕES
     public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
-        Domain.Entities.IntegranteCompromisso integranteCompromisso)
+        IntegranteCompromisso integranteCompromisso)
     {
         var responseDto = new IntegranteCompromissoResumoDTO()
         {
@@ -178,7 +249,7 @@ public class CompromissoFinanceiroService
 
 
     public async Task<CompromissoFinanceiroResponseDTO> ConvertCompromissoToResponseDto(
-        Domain.Entities.CompromissoFinanceiro compromisso, bool parcial)
+        CompromissoFinanceiro compromisso, bool parcial)
     {
         var participacoes = new List<IntegranteCompromissoResumoDTO>();
         foreach (var participacao in compromisso.Participacoes)
@@ -210,4 +281,5 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
     #endregion
+    
 }

@@ -23,9 +23,9 @@ public class IntegranteCompromissoRepository: IIntegranteCompromissoRepository
         return integranteCompromisso;
     }
 
-    public async Task<IntegranteCompromisso> GetByIntegranteToken(string integranteToken, bool deleted = false)
+    public async Task<IntegranteCompromisso?> GetByIntegranteToken(string integranteToken, bool deleted = false)
     {
-        var integranteCompromisso = new IntegranteCompromisso();
+        IntegranteCompromisso integranteCompromisso;
         if (!deleted)
         {
             integranteCompromisso = await _dbContext.IntegrantesCompromissos
@@ -39,15 +39,21 @@ public class IntegranteCompromissoRepository: IIntegranteCompromissoRepository
                 .Where(ic => ic.Integrante.Token == integranteToken)
                 .FirstOrDefaultAsync();
         }
-
-        if (integranteCompromisso == null)
-            throw new Exception();
+        
         return  integranteCompromisso;
     }
 
     public async Task<IntegranteCompromisso> Create(IntegranteCompromisso integranteCompromisso)
     {
         var newIntegranteCompromisso = _dbContext.IntegrantesCompromissos.Add(integranteCompromisso);
+        await _dbContext.SaveChangesAsync();
+        
+        return newIntegranteCompromisso.Entity;
+    }
+
+    public async Task<IntegranteCompromisso> Update(IntegranteCompromisso integranteCompromisso)
+    {
+        var newIntegranteCompromisso = _dbContext.IntegrantesCompromissos.Update(integranteCompromisso);
         await _dbContext.SaveChangesAsync();
         
         return newIntegranteCompromisso.Entity;

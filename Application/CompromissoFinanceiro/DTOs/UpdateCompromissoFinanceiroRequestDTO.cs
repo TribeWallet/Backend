@@ -11,4 +11,5 @@ public class UpdateCompromissoFinanceiroRequestDTO
     public TipoDivisao? TipoDivisao { get; set; }
     public string? Imagem  { get; set; }
     public string? Categoria { get; set; }
+    public required ICollection<CreateIntegranteCompromissoRequestDTO> Participacoes { get; set; }
 }

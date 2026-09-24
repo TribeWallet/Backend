@@ -17,10 +17,11 @@ public class GrupoRepository : IGrupoRepository
     public async Task<Grupo> GetByToken(string token)
     {
         var grupo = await _dbContext.Grupos
+            .Where(g => g.Token == token)
+            .Include(g => g.Compromissos)
             .Include(g => g.Integrantes)
-            .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
-            .FirstOrDefaultAsync(u => u.Token == token);
-        return grupo ?? throw new Exception("Grupo não encontrado pelo token informado");
+            .FirstOrDefaultAsync();
+        return grupo;
     }
 
     public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
