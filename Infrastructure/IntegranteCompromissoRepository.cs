@@ -51,6 +51,14 @@ public class IntegranteCompromissoRepository: IIntegranteCompromissoRepository
         return newIntegranteCompromisso.Entity;
     }
 
+    public async Task<ICollection<IntegranteCompromisso>> CreateMultiple(ICollection<IntegranteCompromisso> integranteCompromissos)
+    {
+        _dbContext.IntegrantesCompromissos.AddRange(integranteCompromissos);
+        await _dbContext.SaveChangesAsync();
+
+        return integranteCompromissos;
+    }
+
     public async Task<IntegranteCompromisso> Update(IntegranteCompromisso integranteCompromisso)
     {
         var newIntegranteCompromisso = _dbContext.IntegrantesCompromissos.Update(integranteCompromisso);
