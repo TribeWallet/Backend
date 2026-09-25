@@ -16,11 +16,27 @@ public class UsuarioService
         _jwtTokenService = jwtTokenService;
     }
     
-    public async Task<IEnumerable<UsuarioResponseDTO>> GetAll()
+    /*public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
     {
-        var usuarios = await _repository.GetAll();
+        var usuarios = await _repository.GetAll(deleted);
         return usuarios.Select(ConvertToDto).ToList();
-    }
+    }*/ //codigo antigo. esse bloco abaixo substitui para compilar
+    // O serviço passa a aceitar o parâmetro e repassa para o repositório
+    public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
+    {
+        var usuarios = await _repository.GetAll(deleted); 
+        
+        // Supondo que você use LINQ ou um laço para converter, a estrutura é parecida com esta:
+        return usuarios.Select(u => new UsuarioResponseDTO
+        {
+            UsuarioToken = u.Token,
+            Nome = u.Nome,
+            Sobrenome = u.Sobrenome,
+            Email = u.Email,
+            Username = u.Username,
+            DeletedAt = u.DeletedAt
+        }).ToList();
+    }   
 
     public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {

@@ -20,10 +20,10 @@ public class UsuarioController: ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(bool deleted = false)
+    public async Task<IActionResult> GetAll([FromQuery] bool deleted = false)
     {
-        var usuarios = await _usuarioService.GetAll(deleted);
-        return Ok(usuarios);
+        var result = await _usuarioService.GetAll(deleted);
+        return Ok(result);
     }
 
     [Authorize]
