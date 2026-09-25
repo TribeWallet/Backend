@@ -9,5 +9,6 @@ public class CompromissoFinanceiroResumoDTO
     public string Titulo { get; set; }
     public decimal ValorTotal { get; set; }
     public DateTime Data { get; set; }
+    public GrupoResponseDTO? Grupo { get; set; }
     public string Categoria { get; set; }
 }

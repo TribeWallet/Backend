@@ -47,6 +47,24 @@ public class PagamentoRepository : IPagamentoRepository
             .FirstOrDefaultAsync(p => p.Token == token);
     }
 
+    public async Task<ICollection<Pagamento>> GetAllByIntegranteCompromissoToken(string integranteCompromissoToken, bool deleted = false)
+    {
+        var query = _dbContext.Pagamentos
+            .Where(p => p.IntegranteCompromisso.Token == integranteCompromissoToken)
+            .Include(p => p.IntegranteCompromisso)
+            .ThenInclude(ic => ic.Integrante)
+            .ThenInclude(i => i.Usuario)
+            .Include(p => p.IntegranteCompromisso)
+            .ThenInclude(ic => ic.Compromisso)
+            .ThenInclude(c => c.Grupo)
+            .AsQueryable();
+
+        if (!deleted)
+            query = query.Where(p => p.DeletedAt == null);
+
+        return await query.ToListAsync();
+    }
+
     public async Task<IEnumerable<Pagamento>> GetAll(bool deleted = false)
     {
         var query = _dbContext.Pagamentos

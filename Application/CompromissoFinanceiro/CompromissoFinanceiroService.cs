@@ -4,6 +4,7 @@ using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.IntegranteCompromisso.DTOs;
+using TribeWallet.Application.Pagamento;
 using TribeWallet.Infrastructure;
 using TribeWallet.Services;
 
@@ -18,8 +19,9 @@ public class CompromissoFinanceiroService
     private readonly IIntegranteCompromissoRepository  _integranteCompromissoRepository;
     private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
     private readonly IntegranteService _integranteService;
+    private readonly PagamentoService _pagamentoService;
 
-    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository)
+    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, PagamentoService pagamentoService)
     {
         _compromissoFinanceiroRepository = compromissoFinanceiroRepository;
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
@@ -27,6 +29,7 @@ public class CompromissoFinanceiroService
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
         _integranteCompromissoRepository = integranteCompromissoRepository;
+        _pagamentoService = pagamentoService;
     }
 
     public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByIntegranteToken(string integranteToken)
@@ -248,17 +251,19 @@ public class CompromissoFinanceiroService
 
         return participacoes;
     }
-    public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
+    public async Task<IntegranteCompromissoResumoDTO> ConvertIntegranteCompromissoToResumoDto(
         IntegranteCompromisso integranteCompromisso)
     {
+        
+        var pagamentos = await _pagamentoService.GetPagamentosByIntegranteCompromissoToken(integranteCompromisso.Token);
         var responseDto = new IntegranteCompromissoResumoDTO()
         {
             IntegranteCompromissoToken = integranteCompromisso.Token,
             Integrante = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(integranteCompromisso.Integrante),
             ValorDevedor = integranteCompromisso.ValorDevedor,
             ValorPago = integranteCompromisso.ValorPago,
-            DeletedAt = integranteCompromisso.DeletedAt
-            //TODO PAGAMENTOS
+            DeletedAt = integranteCompromisso.DeletedAt,
+            Pagamentos = pagamentos 
         };
 
         return responseDto;
@@ -271,7 +276,7 @@ public class CompromissoFinanceiroService
         var participacoes = new List<IntegranteCompromissoResumoDTO>();
         foreach (var participacao in compromisso.Participacoes)
         {
-            var participacaoDto = ConvertIntegranteCompromissoToResumoDto(participacao);
+            var participacaoDto = await ConvertIntegranteCompromissoToResumoDto(participacao);
             participacoes.Add(participacaoDto);
         }
 
@@ -286,7 +291,7 @@ public class CompromissoFinanceiroService
             Imagem = compromisso.Imagem,
             Categoria = compromisso.Categoria,
             Participacoes = participacoes,
-            DeletedAt = compromisso.DeletedAt
+            DeletedAt = compromisso.DeletedAt,
             //TODO RELATORIOS
         };
 
