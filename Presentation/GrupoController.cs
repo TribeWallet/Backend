@@ -21,7 +21,20 @@ public class GrupoController : ControllerBase
         _integranteService = integranteService;
     }
 
-    [HttpGet("{usuarioToken}")]
+    [HttpGet("{grupoToken}")]
+    public async Task<IActionResult> GetByGrupoToken(string grupoToken, bool deleted)
+    {
+        try
+        {
+            var responseDto = await _grupoService.GetByToken(grupoToken, deleted);
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    [HttpGet("usuario/{usuarioToken}")]
     public async Task<IActionResult> GetByUsuarioToken(string usuarioToken, bool deleted)
     {
         try

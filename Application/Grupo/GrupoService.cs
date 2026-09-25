@@ -1,5 +1,9 @@
+using TribeWallet.Application.Compromisso.DTOs;
+using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Infrastructure;
+using TribeWallet.Services;
 
 namespace TribeWallet.Application.Grupo;
 using TribeWallet.Domain.Entities;
@@ -9,27 +13,43 @@ public class GrupoService
 {
     private readonly IGrupoRepository _grupoRepository;
     private readonly IIntegranteRepository _integranteRepository;
+    private readonly IIntegranteCompromissoRepository  _integranteCompromissoRepository;
     private readonly IntegranteService _integranteService;
+    private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
+    private readonly CompromissoFinanceiroService _compromissoFinanceiroService;
     
-    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService)
+    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService, CompromissoFinanceiroService compromissoFinanceiroService, IIntegranteCompromissoRepository integranteCompromissoRepository)
     {
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
         _integranteService = integranteService;
+        _grupoIntegranteCommonService = grupoIntegranteCommonService;
+        _compromissoFinanceiroService = compromissoFinanceiroService;
+        _integranteCompromissoRepository = integranteCompromissoRepository;
     }
 
     public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
     {
         var grupos = await _grupoRepository.GetAllByUsuarioToken(token, deleted);
         var responseDto = new List<GrupoResponseDTO>();
+
         foreach (var grupo in grupos)
         {
+            var compromissosResponseDtoList = new List<CompromissoFinanceiroResponseDTO>();
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                
+                //em ConvertCompromissoToResponseDto, parcial não busca o grupo de novo e adiciona dentro de compromissos.
+                var compromissoResponseDto = await _compromissoFinanceiroService.ConvertCompromissoToResponseDto(compromisso, parcial: true);
+                compromissosResponseDtoList.Add(compromissoResponseDto);
+            }
             var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted);
             var grupoDto = new GrupoResponseDTO
             {
                 GrupoToken =  grupo.Token,
                 Nome = grupo.Nome,
                 Descricao = grupo.Descricao,
+                Compromissos = compromissosResponseDtoList,
                 DeletedAt = grupo.DeletedAt,
                 Integrantes = integrantesDto
             };
@@ -39,10 +59,12 @@ public class GrupoService
         return responseDto;
     }
 
-    public async Task<Grupo> GetByToken(string grupoToken)
+    public async Task<GrupoResponseDTO> GetByToken(string grupoToken, bool deleted)
     {
         var grupo = await _grupoRepository.GetByToken(grupoToken);
-        return grupo;
+
+        var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted);
+        return responseDto;
     }
 
     /// <summary>Marca o grupo como excluído. O registro fica no banco com a data em DeletedAt.</summary>
@@ -75,12 +97,12 @@ public class GrupoService
                 
                 //persiste integrante no banco
                 newIntegrante = await _integranteRepository.Create(newIntegrante);
-                var integranteResponseDto = _integranteService.ConvertIntegranteToResponseDto(newIntegrante, grupo.Token);
+                var integranteResponseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(newIntegrante);
                 
                 integranteResponseDtoList.Add(integranteResponseDto);
             }
         }
-        
+
         //cria dto de resposta dos grupos
         var responseDto = new GrupoResponseDTO
         {
@@ -104,42 +126,20 @@ public class GrupoService
         
         await _grupoRepository.Update(grupo);
      
-        var responseDto = await convertGrupoToResponseDto(grupo);
+        var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
     }
 
     public async Task<GrupoResponseDTO> RemoveIntegrante(string grupoToken, string integranteToken)
     {
         var integrante = await _integranteRepository.GetByToken(integranteToken);
+        var grupo = integrante.Grupo;
+        var integranteCompromisso = await _integranteCompromissoRepository.GetByIntegranteToken(integranteToken);
+        
+        await _integranteCompromissoRepository.Delete(integranteCompromisso);
         await _integranteRepository.Delete(integrante);
         
-        var grupo = integrante.Grupo;
-        var responseDto = await convertGrupoToResponseDto(grupo);
+        var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
     }
-
-    private async Task<GrupoResponseDTO> convertGrupoToResponseDto(Grupo grupo)
-    {
-        //updates serão feitos apenas em integrantes ativos
-        var integrantes = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted: false);
-
-        var grupoResponseDto = new GrupoResponseDTO
-        {
-            GrupoToken = grupo.Token,
-            Nome = grupo.Nome,
-            Descricao = grupo.Descricao,
-            DeletedAt = grupo.DeletedAt,
-            Integrantes = integrantes
-        };
-        
-        return grupoResponseDto;
-    }
-
-    
-    //TODO refatorar criação de integrantes
-    /*private async Task<List<IntegranteResponseDTO>> addIntegrantesToGrupo(
-        CreateIntegranteRequestDTO createIntegranteRequestDto)
-    {
-        
-    }*/
 }

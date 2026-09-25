@@ -1,6 +1,6 @@
 namespace TribeWallet.Application.Usuario;
-using TribeWallet.Services;
-using TribeWallet.Domain.Entities;
+using Services;
+using Domain.Entities;
 
 public class UsuarioService
 {

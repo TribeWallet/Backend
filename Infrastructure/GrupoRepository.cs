@@ -17,9 +17,11 @@ public class GrupoRepository : IGrupoRepository
     public async Task<Grupo> GetByToken(string token)
     {
         var grupo = await _dbContext.Grupos
+            .Where(g => g.Token == token)
+            .Include(g => g.Compromissos)
             .Include(g => g.Integrantes)
-            .FirstOrDefaultAsync(u => u.Token == token);
-        return grupo ?? throw new Exception("Grupo não encontrado pelo token informado");
+            .FirstOrDefaultAsync();
+        return grupo;
     }
 
     public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
@@ -32,7 +34,9 @@ public class GrupoRepository : IGrupoRepository
             grupos = await _dbContext.Grupos
                 .Include(g => g.Integrantes)
                 .ThenInclude(i => i.Usuario)
+                .Include(g => g.Compromissos)
                 .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
+                .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
                 .Where(g => g.DeletedAt == null)
                 .ToListAsync();
 
@@ -43,7 +47,9 @@ public class GrupoRepository : IGrupoRepository
         grupos = await _dbContext.Grupos
             .Include(g => g.Integrantes)
             .ThenInclude(i => i.Usuario)
-            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken)).ToListAsync();
+            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
+            .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
+            .ToListAsync();
 
         return grupos;
     }

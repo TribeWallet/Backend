@@ -4,6 +4,7 @@ using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Domain.Entities;
+using TribeWallet.Services;
 
 namespace TribeWallet.Infrastructure;
 
@@ -12,14 +13,23 @@ public class IntegranteService
     private readonly IIntegranteRepository _integranteRepository;
     private readonly UsuarioService _usuarioService;
     private readonly IGrupoRepository _grupoRepository;
+    private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
 
-    public IntegranteService(IIntegranteRepository integranteRepository, UsuarioService usuarioService, IGrupoRepository grupoRepository)
+    public IntegranteService(IIntegranteRepository integranteRepository, UsuarioService usuarioService, IGrupoRepository grupoRepository, GrupoIntegranteCommonService grupoIntegranteCommonService)
     {
         _integranteRepository = integranteRepository;
         _usuarioService = usuarioService;
         _grupoRepository = grupoRepository;
+        _grupoIntegranteCommonService = grupoIntegranteCommonService;
     }
 
+    public async Task<IntegranteResponseDTO> GetByToken(string integranteToken)
+    {
+        var integrante = await _integranteRepository.GetByToken(integranteToken);
+        var responseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(integrante);
+        
+        return responseDto;
+    }
     public async Task<List<IntegranteResponseDTO>> AddIntegranteToGrupo(List<CreateIntegranteRequestDTO> requestDto,
         string grupoToken)
     {
@@ -44,7 +54,7 @@ public class IntegranteService
             await _integranteRepository.Create(newIntegrante);
             
             //converte integrante e usuario em responseDTOs aninhados
-            var responseDto = ConvertIntegranteToResponseDto(newIntegrante, grupoToken);
+            var responseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(newIntegrante);
             responseDtoList.Add(responseDto);
         }
         
@@ -57,7 +67,7 @@ public class IntegranteService
         var responseDto = new List<IntegranteResponseDTO>();
         foreach (var integrante in integrantes)
         {
-            var integranteDto = ConvertIntegranteToResponseDto(integrante, grupoToken);
+            var integranteDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(integrante);
             responseDto.Add(integranteDto);
         }
         
@@ -76,33 +86,5 @@ public class IntegranteService
 
         return integrante;
     }
-    public IntegranteResponseDTO ConvertIntegranteToResponseDto(Integrante integrante, string grupoToken)
-    {
-        var usuarioDto = ConvertUsuarioToResponseDto(integrante.Usuario);
-        var integranteDto = new IntegranteResponseDTO
-        {
-            IntegranteToken = integrante.Token,
-            Usuario = usuarioDto,
-            GrupoToken = grupoToken,
-            DeletedAt =  integrante.DeletedAt,
-            //TODO adicionar compromissos
-        };
-        
-        return integranteDto;
-    }
 
-    private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
-    {
-        var usuarioDto = new UsuarioResponseDTO
-        {
-            UsuarioToken = usuario.Token,
-            Nome = usuario.Nome,
-            Sobrenome = usuario.Sobrenome,
-            Email = usuario.Email,
-            Username = usuario.Username,
-            DeletedAt = usuario.DeletedAt
-        };
-        
-        return usuarioDto;
-    }
 }
