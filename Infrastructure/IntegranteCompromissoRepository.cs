@@ -5,7 +5,7 @@ using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Infrastructure;
 
-public class IntegranteCompromissoRepository: IIntegranteCompromissoRepository
+public class IntegranteCompromissoRepository : IIntegranteCompromissoRepository
 {
     private readonly AppDbContext _dbContext;
 
