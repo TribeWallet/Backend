@@ -1,4 +1,5 @@
 using TribeWallet.Application.Compromisso.DTOs;
+using TribeWallet.Application.Grupo.DTOs;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.Pagamento.DTOs;
 
@@ -9,7 +10,7 @@ public class IntegranteCompromissoResponseDTO
     public string IntegranteCompromissoToken { get; set; }
     public string CompromissoFinanceiroToken { get; set; }
     public IntegranteResponseDTO Integrante { get; set; }
-    public CompromissoFinanceiroResumoDTO CompromissoFinanceiro { get; set; }
+    public CompromissoFinanceiroResponseDTO CompromissoFinanceiro { get; set; }
     public decimal ValorDevedor { get; set; }
     public decimal ValorPago { get; set; }
     public ICollection<PagamentoResponseDTO> Pagamentos { get; set; } = [];

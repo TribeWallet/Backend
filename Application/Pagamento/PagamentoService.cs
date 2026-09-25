@@ -148,7 +148,7 @@ public class PagamentoService
                     ValorTotal = compromisso.ValorTotal,
                     Data = compromisso.Data,
                     TipoDivisao = compromisso.TipoDivisao,
-                    ImagemUrl = compromisso.Imagem,
+                    Imagem = compromisso.Imagem,
                     Categoria = compromisso.Categoria
                 };
 
