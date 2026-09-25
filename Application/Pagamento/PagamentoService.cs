@@ -40,7 +40,9 @@ public class PagamentoService
         };
 
         var novoPagamento = await _pagamentoRepository.Add(pagamento);
-
+        
+        integranteCompromisso.ValorPago = novoPagamento.Valor;
+        await _integranteCompromissoRepository.Update(integranteCompromisso);
         // Ao salvar, o EF pode não retornar a árvore completa de dependências na mesma instância.
         // Recarregar pelo Token garante que o repositório aplique os .Include() definidos e 
         // o MapToResponseDTO tenha todos os dados necessários.
@@ -86,6 +88,20 @@ public class PagamentoService
             throw new Exception("Pagamento não encontrado.");
 
         await _pagamentoRepository.Delete(pagamento);
+    }
+
+    public async Task<ICollection<PagamentoResponseDTO>> GetPagamentosByIntegranteCompromissoToken(string integranteCompromissoToken)
+    {
+        var pagamentos = await _pagamentoRepository.GetAllByIntegranteCompromissoToken(integranteCompromissoToken);
+        var responseDtoList = new List<PagamentoResponseDTO>();
+
+        foreach (var pagamento in pagamentos)
+        {
+            var reponseDto = MapToResponseDTO(pagamento);
+            responseDtoList.Add(reponseDto);
+        }
+
+        return responseDtoList;
     }
 
     private PagamentoResponseDTO MapToResponseDTO(Domain.Entities.Pagamento pagamento)
