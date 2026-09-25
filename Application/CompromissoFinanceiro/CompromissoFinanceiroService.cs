@@ -92,6 +92,8 @@ public class CompromissoFinanceiroService
         UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+        var participacoes = await _integranteCompromissoRepository.GetAllByCompromissoToken(compromissoToken);
+        
         compromisso.Titulo = requestDto.Titulo ?? compromisso.Titulo;
         compromisso.ValorTotal = requestDto.ValorTotal ?? compromisso.ValorTotal;
         compromisso.Data = requestDto.Data ?? compromisso.Data;
@@ -99,7 +101,16 @@ public class CompromissoFinanceiroService
         compromisso.Imagem = requestDto.Imagem ?? compromisso.Imagem;
         compromisso.Categoria = requestDto.Categoria ?? compromisso.Categoria;
 
-        
+        if (participacoes.Count > 0)
+        {
+            participacoes = IncludeValorExatoInParticipacao(requestDto.Participacoes, participacoes);
+            var divisao = new DividirValorRecord(compromisso, participacoes, compromisso.ValorTotal, compromisso.TipoDivisao);
+            participacoes = AssignValorDevedorAndSave(divisao);
+            foreach (var participacao in participacoes)
+            {   
+                await _integranteCompromissoRepository.Update(participacao);
+            }
+        }
         await _compromissoFinanceiroRepository.Update(compromisso);
 
         var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
@@ -220,7 +231,23 @@ public class CompromissoFinanceiroService
 
         return participacoes;
     }
-    
+
+    private ICollection<IntegranteCompromisso> IncludeValorExatoInParticipacao(ICollection<CreateIntegranteCompromissoRequestDTO> requestDtoList,
+        ICollection<IntegranteCompromisso> participacoes)
+    {
+        foreach (var requestDto in requestDtoList)
+        {
+            foreach (var participacao in participacoes)
+            {
+                if (participacao.Integrante.Token == requestDto.IntegranteToken)
+                {
+                    participacao.ValorDevedor = requestDto.ValorDevedor;
+                }
+            }
+        }
+
+        return participacoes;
+    }
     public IntegranteCompromissoResumoDTO ConvertIntegranteCompromissoToResumoDto(
         IntegranteCompromisso integranteCompromisso)
     {
