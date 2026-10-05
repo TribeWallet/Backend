@@ -33,4 +33,12 @@ public class ArquivoRepository : IArquivoRepository
         await _dbContext.SaveChangesAsync();
         return arquivo;
     }
+
+    public async Task<Arquivo?> Update(Arquivo arquivo)
+    {
+        _dbContext.Arquivos.Update(arquivo);
+        
+        await _dbContext.SaveChangesAsync();
+        return arquivo;
+    }
 }

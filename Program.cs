@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
@@ -107,6 +108,9 @@ builder.Services.AddScoped<GrupoIntegranteCommonService>();
 builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
 builder.Services.AddScoped<PagamentoService>();
 builder.Services.AddScoped<IIntegranteCompromissoRepository, IntegranteCompromissoRepository>();
+builder.Services.AddScoped<IArquivoRepository, ArquivoRepository >();
+builder.Services.AddScoped<ArquivoLocalService>();
+
 
 
 var app = builder.Build();

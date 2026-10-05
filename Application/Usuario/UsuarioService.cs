@@ -55,7 +55,7 @@ public class UsuarioService
             HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
         usuario = await _repository.Create(usuario);
-        return ConvertToDto(usuario);
+        return ConvertUsuarioToResponseDto(usuario);
     }
 
     public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDto)
@@ -65,7 +65,7 @@ public class UsuarioService
 
         var loginResponseDto = new LoginResponseDTO
         {
-            UsuarioResponseDto = ConvertToDto(usuario),
+            UsuarioResponseDto = ConvertUsuarioToResponseDto(usuario),
             JwtToken = jwtToken,
         };
         return loginResponseDto;
@@ -73,15 +73,17 @@ public class UsuarioService
 
     public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
+        var imagem = await _arquivoLocalService.SalvarArquivoLocalAsync(updateUsuarioRequestDto.Imagem);
+        
         var usuario = await GetByToken(usuarioToken);
         usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
         usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
         usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
-        usuario.Imagem = updateUsuarioRequestDto.Imagem ?? usuario.Imagem;
+        usuario.Imagem = imagem == null ? usuario.Imagem : _arquivoLocalService.ObterUrlLocalCompleta(imagem.Path);
         usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
         
         var newUsuario = await _repository.Update(usuario);
-        return ConvertToDto(newUsuario);
+        return ConvertUsuarioToResponseDto(newUsuario);
     }
 
     /// <summary>Marca o usuário como excluído. O registro fica no banco com a data em DeletedAt.</summary>
@@ -110,18 +112,6 @@ public class UsuarioService
 
         return responseDtoList;
     }
-    private static UsuarioResponseDTO ConvertToDto(Usuario usuario)
-    {
-        return new UsuarioResponseDTO
-        {
-            UsuarioToken = usuario.Token,
-            Nome = usuario.Nome,
-            Sobrenome = usuario.Sobrenome,
-            Email = usuario.Email,
-            Username = usuario.Username,
-            DeletedAt = usuario.DeletedAt
-        };
-    }
 
     private static string HashSenha(string senha)
     {
@@ -136,7 +126,8 @@ public class UsuarioService
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
-            Username = usuario.Username
+            Username = usuario.Username,
+            ImagemUrl = usuario.Imagem
         };
 
         return reponseDto;

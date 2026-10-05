@@ -54,8 +54,8 @@ public class ArquivoLocalService
         if (string.IsNullOrEmpty(caminhoArmazenamento))
             return string.Empty;
 
-        string baseUrl = _config["STORAGE_BASE_URL"] ?? "http://localhost:9000/tribewallet";
-        return $"{baseUrl.TrimEnd('/')}/{caminhoArmazenamento}";
+        string baseUrl = _config["STORAGE_BASE_URL"] ?? "http://localhost:5049/tribewallet";
+        return $"{baseUrl.TrimEnd('/')}/{caminhoArmazenamento.TrimStart('/')}";
     }
 
     private static TipoConteudo MapearTipoArquivo(string contentType, string extensao)

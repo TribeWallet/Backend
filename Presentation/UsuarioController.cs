@@ -43,7 +43,7 @@ public class UsuarioController: ControllerBase
 
     [Authorize]
     [HttpPut("{usuarioToken}")]
-    public async Task<IActionResult> UpdateUsuario([FromBody] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
+    public async Task<IActionResult> UpdateUsuario([FromForm] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         try
         {

@@ -4,4 +4,5 @@ public interface IArquivoRepository
 {
     public Task<Arquivo?> GetByToken(string token, bool deleted = false);
     public Task<Arquivo> Create(Arquivo arquivo);
+    public Task<Arquivo?> Update(Arquivo arquivo);
 }
