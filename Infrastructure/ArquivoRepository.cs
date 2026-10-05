@@ -14,10 +14,10 @@ public class ArquivoRepository : IArquivoRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Arquivo?> GetByToken(string token, bool deleted = false)
+    public async Task<Arquivo?> GetByPath(string path, bool deleted = false)
     {
         var arquivo = _dbContext.Arquivos
-            .Where(a => a.Token == token);
+            .Where(a => a.Path == path);
 
         if (!deleted)
             arquivo
@@ -40,5 +40,16 @@ public class ArquivoRepository : IArquivoRepository
         
         await _dbContext.SaveChangesAsync();
         return arquivo;
+    }
+
+    public async Task Delete(Arquivo arquivo)
+    {
+        if (arquivo.DeletedAt == null)
+        {
+            arquivo.DeletedAt = DateTime.UtcNow;
+            _dbContext.Arquivos.Update(arquivo);
+            
+            await  _dbContext.SaveChangesAsync();
+        }
     }
 }

@@ -73,14 +73,19 @@ public class UsuarioService
 
     public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
-        var imagem = await _arquivoLocalService.SalvarArquivoLocalAsync(updateUsuarioRequestDto.Imagem);
-        
         var usuario = await GetByToken(usuarioToken);
+        
         usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
         usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
         usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
-        usuario.Imagem = imagem == null ? usuario.Imagem : _arquivoLocalService.ObterUrlLocalCompleta(imagem.Path);
         usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
+
+        if (updateUsuarioRequestDto.Imagem != null)
+        {
+            await _arquivoLocalService.DeletarArquivo(usuario.Imagem);
+            var newImage = await _arquivoLocalService.SalvarArquivoLocalAsync(updateUsuarioRequestDto.Imagem);
+            usuario.Imagem = newImage == null ? usuario.Imagem : newImage.Path;
+        }
         
         var newUsuario = await _repository.Update(usuario);
         return ConvertUsuarioToResponseDto(newUsuario);
@@ -120,6 +125,7 @@ public class UsuarioService
 
     private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
     {
+        var imagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem);
         var reponseDto = new UsuarioResponseDTO
         {
             UsuarioToken = usuario.Token,
@@ -127,7 +133,7 @@ public class UsuarioService
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
             Username = usuario.Username,
-            ImagemUrl = usuario.Imagem
+            ImagemUrl = imagemUrl
         };
 
         return reponseDto;

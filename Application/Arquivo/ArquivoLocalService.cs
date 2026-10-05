@@ -1,6 +1,6 @@
-using TribeWallet.Domain.Entities;
 
 namespace TribeWallet.Application.Arquivo;
+using TribeWallet.Domain.Entities;
 
 public class ArquivoLocalService
 {
@@ -15,7 +15,12 @@ public class ArquivoLocalService
         _arquivoRepository = arquivoRepository;
     }
 
-    public async Task<Domain.Entities.Arquivo?> SalvarArquivoLocalAsync(IFormFile? file)
+    public async Task<Arquivo?> GetArquivoByPath(string? caminhoArquivo)
+    {
+        var arquivo = await _arquivoRepository.GetByPath(caminhoArquivo);
+        return arquivo;
+    }
+    public async Task<Arquivo?> SalvarArquivoLocalAsync(IFormFile? file)
     {
         if (file == null || file.Length == 0)
             return null;
@@ -73,5 +78,25 @@ public class ArquivoLocalService
                 _ => throw new ArgumentException("Tipo de arquivo não suportado.")
             }
         };
+    }
+    
+    public async Task DeletarArquivo(string? caminhoArmazenamento)
+    {
+        if (string.IsNullOrWhiteSpace(caminhoArmazenamento))
+            return;
+
+        string localPath = _config["STORAGE_LOCAL_PATH"] ?? Path.Combine(_env.ContentRootPath, "Uploads");
+        string uploadsFolder = Path.GetFullPath(localPath);
+
+        string filename = Path.GetFileName(caminhoArmazenamento);
+        string caminhoFisico = Path.Combine(uploadsFolder, filename);
+
+        if (File.Exists(caminhoFisico))
+        {
+            var arquivoMetadata = await GetArquivoByPath(caminhoArmazenamento);
+            if (arquivoMetadata != null)
+                await _arquivoRepository.Delete(arquivoMetadata);
+            File.Delete(caminhoFisico);
+        }
     }
 }
