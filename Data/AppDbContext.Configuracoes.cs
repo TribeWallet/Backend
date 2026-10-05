@@ -190,4 +190,15 @@ public partial class AppDbContext
             e.HasIndex(h => new { h.Entidade, h.EntidadeId });
             e.HasIndex(h => h.DataHora);
         });
+
+    private static void ConfigurarArquivos(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<Arquivo>(e =>
+        {
+            e.ToTable("arquivos");
+            e.HasKey(a => a.ArquivoId);
+            e.Property(a => a.ArquivoId).ValueGeneratedNever();
+            e.Property(a => a.Nome).HasMaxLength(200).IsRequired();
+            e.Property(a => a.Tipo).HasConversion<int>().IsRequired();
+            e.Property(a => a.Path).HasMaxLength(1024).IsRequired();
+        });
 }

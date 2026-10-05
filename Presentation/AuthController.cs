@@ -32,7 +32,8 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Signup([FromBody] CreateUsuarioRequestDTO createUsuarioRequestDto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Register([FromForm] CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
         try
         {

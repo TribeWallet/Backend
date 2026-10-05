@@ -110,8 +110,7 @@ public class GrupoService
             Nome = grupo.Nome,
             Descricao = grupo.Descricao,
             DeletedAt = grupo.DeletedAt,
-            Integrantes =  integranteResponseDtoList
-            //TODO adicionar compromissos
+            Integrantes =  integranteResponseDtoList 
         };
         return responseDto;
     }

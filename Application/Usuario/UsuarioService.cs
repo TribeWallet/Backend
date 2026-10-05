@@ -1,3 +1,5 @@
+using TribeWallet.Application.Arquivo;
+
 namespace TribeWallet.Application.Usuario;
 using Services;
 using Domain.Entities;
@@ -9,11 +11,13 @@ public class UsuarioService
     
     private readonly IUsuarioRepository _repository;
     private readonly JwtTokenService _jwtTokenService;
+    private readonly ArquivoLocalService _arquivoLocalService;
     
-    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService)
+    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService)
     {
         _repository = repository;
         _jwtTokenService = jwtTokenService;
+        _arquivoLocalService = arquivoLocalService;
     }
     
     /*public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
@@ -40,13 +44,14 @@ public class UsuarioService
 
     public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
+        var imagemPerfil = await _arquivoLocalService.SalvarArquivoLocalAsync(createUsuarioRequestDto.Imagem);
         var usuario = new Usuario
         {
             Nome = createUsuarioRequestDto.Nome,
             Sobrenome = createUsuarioRequestDto.Sobrenome,
             Email = createUsuarioRequestDto.Email,
             Username = createUsuarioRequestDto.Username,
-            Imagem = createUsuarioRequestDto.Imagem ?? "",
+            Imagem = imagemPerfil?.Path, 
             HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
         usuario = await _repository.Create(usuario);
