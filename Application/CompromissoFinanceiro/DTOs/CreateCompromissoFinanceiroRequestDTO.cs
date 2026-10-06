@@ -13,7 +13,9 @@ public class CreateCompromissoFinanceiroRequestDTO
     public float? Percentual { get; set; }
     public DateTime Data { get; set; }
     public TipoDivisao TipoDivisao { get; set; }
-    public string? Imagem  { get; set; }
+    public IFormFile? Imagem  { get; set; }
     public string Categoria { get; set; }
-    public ICollection<CreateIntegranteCompromissoRequestDTO> Participacoes { get; set; }
+    /*
+    public ICollection<CreateIntegranteCompromissoRequestDTO>? Participacoes { get; set; }
+*/
 }

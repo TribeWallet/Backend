@@ -49,7 +49,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
     
     [HttpPost("{grupoToken}")]
-    public async Task<IActionResult> CreateCompromissoFinanceiro([FromBody] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
+    public async Task<IActionResult> CreateCompromissoFinanceiro([FromForm] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
     {
         try
         {
@@ -63,7 +63,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
     
     [HttpPut("{compromissoToken}")]
-    public async Task<IActionResult> UpdateCompromisso([FromBody] UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
+    public async Task<IActionResult> UpdateCompromisso([FromForm] UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
     {
         try
         {

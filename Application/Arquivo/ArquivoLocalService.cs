@@ -43,7 +43,7 @@ public class ArquivoLocalService
         TipoConteudo tipoEnum = MapearTipoArquivo(file.ContentType, extensao);
 
         // criação da entity de arquivo
-        var arquivoArmazenado = new Domain.Entities.Arquivo
+        var arquivoArmazenado = new Arquivo
         {
             Nome = file.FileName,
             Path = nomeUnico,
