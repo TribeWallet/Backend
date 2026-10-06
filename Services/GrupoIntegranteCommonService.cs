@@ -1,4 +1,5 @@
 using TribeWallet.Application;
+using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
@@ -15,12 +16,14 @@ public class GrupoIntegranteCommonService
     private readonly IGrupoRepository _grupoRepository;
     private readonly IIntegranteRepository _integranteRepository;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly ArquivoLocalService  _arquivoLocalService;
 
-    public GrupoIntegranteCommonService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IUsuarioRepository usuarioRepository)
+    public GrupoIntegranteCommonService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IUsuarioRepository usuarioRepository, ArquivoLocalService arquivoLocalService)
     {
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
         _usuarioRepository = usuarioRepository;
+        _arquivoLocalService = arquivoLocalService;
     }
 
     public async Task<GrupoResponseDTO> ConvertGrupoToResponseDto(Grupo grupo, bool deleted)
@@ -69,7 +72,9 @@ public class GrupoIntegranteCommonService
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
-            Username = usuario.Username
+            Username = usuario.Username,
+            ImagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem),
+            DeletedAt =  usuario.DeletedAt
         };
         
         return usuarioDto;

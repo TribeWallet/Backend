@@ -82,9 +82,13 @@ public class UsuarioService
 
         if (updateUsuarioRequestDto.Imagem != null)
         {
-            await _arquivoLocalService.DeletarArquivo(usuario.Imagem);
             var newImage = await _arquivoLocalService.SalvarArquivoLocalAsync(updateUsuarioRequestDto.Imagem);
-            usuario.Imagem = newImage == null ? usuario.Imagem : newImage.Path;
+
+            if (newImage != null)
+            {
+                await _arquivoLocalService.DeletarArquivo(usuario.Imagem);
+                usuario.Imagem = newImage.Path;
+            }
         }
         
         var newUsuario = await _repository.Update(usuario);

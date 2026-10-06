@@ -3,7 +3,8 @@ using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.IntegranteCompromisso.DTOs; 
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.Compromisso.DTOs;
-using TribeWallet.Application; // Namespace do UsuarioResponseDTO[cite: 14]
+using TribeWallet.Application;
+using TribeWallet.Application.Arquivo; // Namespace do UsuarioResponseDTO[cite: 14]
 using TribeWallet.Application.Grupo.DTOs; // Namespace do GrupoResponseDTO[cite: 13]
 using TribeWallet.Domain.Entities;
 
@@ -12,12 +13,14 @@ namespace TribeWallet.Application.Pagamento;
 public class PagamentoService
 {
     private readonly IPagamentoRepository _pagamentoRepository;
-    private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository; 
+    private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository;
+    private readonly ArquivoLocalService _arquivoLocalService;
 
-    public PagamentoService(IPagamentoRepository pagamentoRepository, IIntegranteCompromissoRepository integranteCompromissoRepository)
+    public PagamentoService(IPagamentoRepository pagamentoRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, ArquivoLocalService arquivoLocalService)
     {
         _pagamentoRepository = pagamentoRepository;
         _integranteCompromissoRepository = integranteCompromissoRepository;
+        _arquivoLocalService = arquivoLocalService;
     }
 
     public async Task<PagamentoResponseDTO> RegistrarPagamento(CreatePagamentoRequestDTO dto)
@@ -29,13 +32,14 @@ public class PagamentoService
         if (integranteCompromisso == null)
             throw new ArgumentException("Fatia de compromisso não encontrada.");
 
+        var comprovante = await _arquivoLocalService.SalvarArquivoLocalAsync(dto.Comprovante);
         var pagamento = new Domain.Entities.Pagamento
         {
             IntegranteCompromissoId = integranteCompromisso.IntegranteCompromissoId,
             Valor = dto.Valor,
             Data = dto.Data,
-            Metodo = (MetodoPagamento)dto.Metodo, 
-            ComprovanteUrl = dto.ComprovanteBase64, 
+            Metodo = dto.Metodo, 
+            ComprovanteUrl = comprovante?.Path, 
             IntegranteCompromisso = integranteCompromisso 
         };
 
@@ -62,7 +66,7 @@ public class PagamentoService
         {
             if (dto.Valor.Value <= 0)
                 throw new ArgumentException("O valor do pagamento deve ser maior que zero.");
-            
+            pagamento.IntegranteCompromisso.ValorPago = dto.Valor.Value;
             pagamento.Valor = dto.Valor.Value;
         }
 
@@ -72,8 +76,15 @@ public class PagamentoService
         if (dto.Metodo.HasValue)
             pagamento.Metodo = (MetodoPagamento)dto.Metodo.Value;
 
-        if (!string.IsNullOrEmpty(dto.ComprovanteBase64))
-            pagamento.ComprovanteUrl = dto.ComprovanteBase64;
+        if (!string.IsNullOrEmpty(dto.Comprovante.Name))
+        {
+            var newComprovante = await _arquivoLocalService.SalvarArquivoLocalAsync(dto.Comprovante);
+            if (newComprovante != null)
+            {
+                await _arquivoLocalService.DeletarArquivo(pagamento.ComprovanteUrl);
+                pagamento.ComprovanteUrl = newComprovante.Path;
+            }
+        }
 
         var pagamentoAtualizado = await _pagamentoRepository.Update(pagamento);
 
@@ -87,6 +98,9 @@ public class PagamentoService
         if (pagamento == null)
             throw new Exception("Pagamento não encontrado.");
 
+        if (pagamento.IntegranteCompromisso != null) pagamento.IntegranteCompromisso.ValorPago -= pagamento.Valor;
+
+        await _arquivoLocalService.DeletarArquivo(pagamento.ComprovanteUrl);
         await _pagamentoRepository.Delete(pagamento);
     }
 
@@ -111,7 +125,7 @@ public class PagamentoService
             PagamentoToken = pagamento.Token,
             Valor = pagamento.Valor,
             Data = pagamento.Data,
-            ComprovanteUrl = pagamento.ComprovanteUrl ?? string.Empty,
+            ComprovanteUrl = _arquivoLocalService.ObterUrlLocalCompleta(pagamento.ComprovanteUrl),
             Metodo = pagamento.Metodo
         };
 
