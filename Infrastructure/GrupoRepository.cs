@@ -35,21 +35,26 @@ public class GrupoRepository : IGrupoRepository
                 .Include(g => g.Integrantes)
                 .ThenInclude(i => i.Usuario)
                 .Include(g => g.Compromissos)
-                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-                .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
+                .ThenInclude(c => c.Participacoes)
+                .ThenInclude(p => p.Integrante)
+                .ThenInclude(i => i.Usuario)
                 .Where(g => g.DeletedAt == null)
+                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
                 .ToListAsync();
 
             return grupos;
         }
         
         // busca registros ativos e inativos
-        grupos = await _dbContext.Grupos
-            .Include(g => g.Integrantes)
-            .ThenInclude(i => i.Usuario)
-            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-            .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
-            .ToListAsync();
+            grupos = await _dbContext.Grupos
+                .Include(g => g.Integrantes)
+                .ThenInclude(i => i.Usuario)
+                .Include(g => g.Compromissos)
+                .ThenInclude(c => c.Participacoes)
+                .ThenInclude(p => p.Integrante)
+                .ThenInclude(i => i.Usuario)
+                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
+                .ToListAsync();
 
         return grupos;
     }

@@ -1,4 +1,8 @@
+using System.Runtime.InteropServices.JavaScript;
 using TribeWallet.Application.Arquivo;
+using TribeWallet.Application.Grupo;
+using TribeWallet.Application.IntegranteCompromisso;
+using TribeWallet.Application.IntegranteCompromisso.DTOs;
 
 namespace TribeWallet.Application.Usuario;
 using Services;
@@ -10,14 +14,18 @@ public class UsuarioService
     private const int FatorBCrypt = 12;
     
     private readonly IUsuarioRepository _repository;
+    private readonly IGrupoRepository _grupoRepository;
+    private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository;
     private readonly JwtTokenService _jwtTokenService;
     private readonly ArquivoLocalService _arquivoLocalService;
     
-    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService)
+    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService, IIntegranteCompromissoRepository integranteCompromissoRepository, IGrupoRepository grupoRepository)
     {
         _repository = repository;
         _jwtTokenService = jwtTokenService;
         _arquivoLocalService = arquivoLocalService;
+        _integranteCompromissoRepository = integranteCompromissoRepository;
+        _grupoRepository = grupoRepository;
     }
     
     /*public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
@@ -122,11 +130,152 @@ public class UsuarioService
         return responseDtoList;
     }
 
+    public async Task<DashboardResponseDTO> GetDashboardData(string usuarioToken)
+    {
+        var grupos = await _grupoRepository.GetAllByUsuarioToken(usuarioToken, deleted: false);    
+
+        var responseDto = ConvertDashDataToResponseDto(grupos, usuarioToken);
+        return responseDto;
+    }
+
+    //Dá e precisa refatorar bastante essas funções seguintes
+    private DashboardResponseDTO ConvertDashDataToResponseDto(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        var contagens =
+            CalculaContagens(grupos, usuarioToken);
+
+        var transacoesEVencimentos = OrgazinaTransacoesEVencimentos(grupos, usuarioToken);
+        var responseDto = new DashboardResponseDTO
+        {
+            GruposAtivosCount = contagens.gruposAtivosCount,
+            PagamentosPendentesCount = contagens.pagamentosPendentesCount,
+            CompromissosAVencerCount = contagens.compromissosAVencerCount,
+            CompromissosVencidosCount = contagens.compromissosVencidosCount,
+            TaxaDePontualidade = contagens.taxaDePontualidade,
+            TransacoesEVencimentos  = transacoesEVencimentos
+        };
+        
+        return responseDto;
+    }
+    
+    private (int gruposAtivosCount, int pagamentosPendentesCount, int compromissosAVencerCount, int compromissosVencidosCount, float taxaDePontualidade) CalculaContagens(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        int gruposAtivosCount = grupos.Count();
+        int pagamentosPendentesCount = 0;
+        int compromissosAVencerCount = 0;
+        int compromissosVencidosCount = 0;
+        int totalCompromisssos = 0;
+        int compromissosPagos = 0;
+        
+        float taxaDePontualidade = 0;
+        
+        foreach (var grupo in grupos)
+        {
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                foreach (var integranteCompromisso in compromisso.Participacoes)
+                {
+                    if (integranteCompromisso.Integrante.Usuario.Token == usuarioToken)
+                    {
+                        if (integranteCompromisso.ValorPago < integranteCompromisso.ValorDevedor)
+                        {
+                            pagamentosPendentesCount++;
+                            TimeSpan diferencaDeDatas = compromisso.Data - DateTime.UtcNow;
+                            
+                            if (diferencaDeDatas.TotalDays < 7 &&  diferencaDeDatas.TotalDays >= 0)
+                                compromissosAVencerCount++;
+
+                            if (diferencaDeDatas.TotalDays < 0)
+                                compromissosVencidosCount++;
+                        }
+
+                        if (integranteCompromisso.ValorPago >= integranteCompromisso.ValorDevedor)
+                            compromissosPagos++;
+                        
+                        totalCompromisssos++;
+                    }
+                }
+            }
+        }
+        if (totalCompromisssos > 0)
+            taxaDePontualidade = (float) compromissosPagos / totalCompromisssos;
+
+        return (gruposAtivosCount, pagamentosPendentesCount, compromissosAVencerCount, compromissosVencidosCount, taxaDePontualidade);
+    }
+
+    private ICollection<IntegranteCompromissoDashResponseDTO> OrgazinaTransacoesEVencimentos(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        ICollection<IntegranteCompromissoDashResponseDTO> ultimasTransacoesEProximosVencimentos = new List<IntegranteCompromissoDashResponseDTO>();
+
+        foreach (var grupo in grupos)
+        {
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                foreach (var integranteCompromisso in compromisso.Participacoes)
+                {
+                    if (integranteCompromisso.Integrante.Usuario.Token == usuarioToken)
+                    {
+                        var transacao = new IntegranteCompromissoDashResponseDTO
+                        {
+                            IntegranteCompromissoToken = integranteCompromisso.Token,
+                            NomeCompromisso = compromisso.Titulo,
+                            ImagemCompromissoUrl = compromisso.Imagem,
+                            NomeGrupo = grupo.Nome,
+                            ValorDevedor = integranteCompromisso.ValorDevedor,
+                            SituacaoPagamento = SetSituacaoPagamento(integranteCompromisso),
+                            DataVencimento = compromisso.Data,
+                            Categoria = compromisso.Categoria,
+                            Vencido = IsCompromissoVencido(compromisso)
+                        };
+
+                        ultimasTransacoesEProximosVencimentos.Add(transacao);
+                    }
+                }
+            }
+        }
+
+        return ultimasTransacoesEProximosVencimentos;
+    }
+    
+    private SituacaoPagamento SetSituacaoPagamento(IntegranteCompromisso integranteCompromisso)
+    {
+        decimal valorPago = integranteCompromisso.ValorPago;
+        decimal valorDevedor = integranteCompromisso.ValorDevedor;
+        decimal diferenca = valorDevedor - valorPago;
+
+        if (valorPago == 0)
+        {
+            return SituacaoPagamento.Pendente;
+        }
+        if (diferenca == 0)
+        {
+            return SituacaoPagamento.Pago;
+        }
+        if (diferenca > 0)
+        {
+            return SituacaoPagamento.Parcial;
+        }
+
+        return SituacaoPagamento.Pago;
+    }
+
+    private bool IsCompromissoVencido(CompromissoFinanceiro compromisso)
+    {
+        double diferencaDatas = (compromisso.Data - DateTime.UtcNow).TotalDays;
+
+        switch (diferencaDatas)
+        {
+            case < 0:
+                return true;
+            default:
+                return false;
+        }
+    }
     private static string HashSenha(string senha)
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
     }
-
+    
     private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
     {
         var imagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem);

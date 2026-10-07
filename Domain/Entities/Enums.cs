@@ -55,3 +55,10 @@ public enum TipoConteudo
     Png = 2,
     Pdf = 3
 }
+
+public enum SituacaoPagamento
+{
+    Pendente = 1,
+    Pago = 2,
+    Parcial = 3,
+}

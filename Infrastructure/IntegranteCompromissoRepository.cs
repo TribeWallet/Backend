@@ -65,6 +65,21 @@ public class IntegranteCompromissoRepository : IIntegranteCompromissoRepository
         return  integranteCompromissos;
     }
 
+    public async Task<ICollection<IntegranteCompromisso>> GetlAllByUsuarioToken(string usuarioToken, bool deleted = false)
+    {
+        //FAZ MAIS SENTIDO FAZER ESSA BUSCA EM GRUPOS?
+        // grupos -> compromissos -> integranteCompromissos
+        var integrantesCompromissos = await _dbContext.IntegrantesCompromissos
+            .Include(ic => ic.Integrante)
+            .Include(ic => ic.Integrante!.Usuario)
+            .Where(ic => ic.Integrante!.Usuario!.Token == usuarioToken)
+            .Include(i => i.Compromisso)
+            .Include(ic => ic.Compromisso!.Grupo)
+            .ToListAsync();
+        
+        return integrantesCompromissos;
+    }
+
     public async Task<IntegranteCompromisso> Create(IntegranteCompromisso integranteCompromisso)
     {
         var newIntegranteCompromisso = _dbContext.IntegrantesCompromissos.Add(integranteCompromisso);

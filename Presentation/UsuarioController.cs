@@ -70,4 +70,18 @@ public class UsuarioController: ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("{usuarioToken}/dashboard")]
+    public async Task<IActionResult> GetDashboardData(string usuarioToken)
+    {
+        try
+        {
+            var responseDto = await _usuarioService.GetDashboardData(usuarioToken);
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
