@@ -40,9 +40,8 @@ public class PagamentoService
         };
 
         var novoPagamento = await _pagamentoRepository.Add(pagamento);
-        
-        integranteCompromisso.ValorPago = novoPagamento.Valor;
-        await _integranteCompromissoRepository.Update(integranteCompromisso);
+
+        await SincronizarValorPago(integranteCompromisso);
         // Ao salvar, o EF pode não retornar a árvore completa de dependências na mesma instância.
         // Recarregar pelo Token garante que o repositório aplique os .Include() definidos e 
         // o MapToResponseDTO tenha todos os dados necessários.
@@ -77,6 +76,9 @@ public class PagamentoService
 
         var pagamentoAtualizado = await _pagamentoRepository.Update(pagamento);
 
+        if (pagamentoAtualizado.IntegranteCompromisso != null)
+            await SincronizarValorPago(pagamentoAtualizado.IntegranteCompromisso);
+
         return MapToResponseDTO(pagamentoAtualizado);
     }
 
@@ -88,6 +90,22 @@ public class PagamentoService
             throw new Exception("Pagamento não encontrado.");
 
         await _pagamentoRepository.Delete(pagamento);
+
+        if (pagamento.IntegranteCompromisso != null)
+            await SincronizarValorPago(pagamento.IntegranteCompromisso);
+    }
+
+    /// <summary>
+    /// ValorPago é um espelho da soma dos pagamentos ativos da fatia. Recalcular depois de
+    /// cada escrita evita que um pagamento parcial apague o anterior.
+    /// </summary>
+    private async Task SincronizarValorPago(Domain.Entities.IntegranteCompromisso integranteCompromisso)
+    {
+        var pagamentos = await _pagamentoRepository
+            .GetAllByIntegranteCompromissoToken(integranteCompromisso.Token);
+
+        integranteCompromisso.ValorPago = pagamentos.Sum(p => p.Valor);
+        await _integranteCompromissoRepository.Update(integranteCompromisso);
     }
 
     public async Task<ICollection<PagamentoResponseDTO>> GetPagamentosByIntegranteCompromissoToken(string integranteCompromissoToken)

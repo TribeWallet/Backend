@@ -133,10 +133,17 @@ public class GrupoService
     public async Task<GrupoResponseDTO> RemoveIntegrante(string grupoToken, string integranteToken)
     {
         var integrante = await _integranteRepository.GetByToken(integranteToken);
+
+        if (integrante is null)
+            throw new Exception("Integrante não encontrado pelo token informado.");
+
         var grupo = integrante.Grupo;
         var integranteCompromisso = await _integranteCompromissoRepository.GetByIntegranteToken(integranteToken);
-        
-        await _integranteCompromissoRepository.Delete(integranteCompromisso);
+
+        // Integrante que nunca entrou num compromisso não tem participação para excluir.
+        if (integranteCompromisso != null)
+            await _integranteCompromissoRepository.Delete(integranteCompromisso);
+
         await _integranteRepository.Delete(integrante);
         
         var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);

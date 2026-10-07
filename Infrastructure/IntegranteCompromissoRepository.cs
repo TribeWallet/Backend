@@ -14,13 +14,14 @@ public class IntegranteCompromissoRepository : IIntegranteCompromissoRepository
         _dbContext = dbContext;
     }
 
-    public async Task<IntegranteCompromisso> GetByToken(string token)
+    /// <summary>Devolve null quando o token não existe: quem chama decide a resposta HTTP.</summary>
+    public async Task<IntegranteCompromisso?> GetByToken(string token)
     {
-        var integranteCompromisso = await _dbContext.IntegrantesCompromissos.FirstOrDefaultAsync(ic => ic.Token == token);
-        
-        if (integranteCompromisso == null)
-            throw new Exception();
-        return integranteCompromisso;
+        return await _dbContext.IntegrantesCompromissos
+            .Include(ic => ic.Integrante)
+            .ThenInclude(i => i.Usuario)
+            .Include(ic => ic.Compromisso)
+            .FirstOrDefaultAsync(ic => ic.Token == token);
     }
 
     public async Task<IntegranteCompromisso?> GetByIntegranteToken(string integranteToken, bool deleted = false)
