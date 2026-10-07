@@ -36,7 +36,6 @@ public class GrupoRepository : IGrupoRepository
                 .ThenInclude(i => i.Usuario)
                 .Include(g => g.Compromissos)
                 .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-                .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
                 .Where(g => g.DeletedAt == null)
                 .ToListAsync();
 
@@ -47,8 +46,8 @@ public class GrupoRepository : IGrupoRepository
         grupos = await _dbContext.Grupos
             .Include(g => g.Integrantes)
             .ThenInclude(i => i.Usuario)
+            .Include(g => g.Compromissos)
             .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-            .Where(g => g.Compromissos.Any(c => c.Grupo.GrupoId == g.GrupoId))
             .ToListAsync();
 
         return grupos;

@@ -123,10 +123,14 @@ public class CompromissoFinanceiroService
     public async Task DeleteCompromissoFinanceiro(string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+
+        if (compromisso is null)
+            throw new Exception("Compromisso não encontrado pelo token informado.");
+
+        // As participações vêm carregadas com o compromisso: dá para excluí-las direto.
         foreach (var participacao in compromisso.Participacoes)
         {
-            var integranteCompromisso = await _integranteCompromissoRepository.GetByIntegranteToken(participacao.Token);
-            await _integranteCompromissoRepository.Delete(integranteCompromisso);
+            await _integranteCompromissoRepository.Delete(participacao);
         }
         await _compromissoFinanceiroRepository.Delete(compromisso);
     }
@@ -136,21 +140,28 @@ public class CompromissoFinanceiroService
 
         foreach (var requestDto in requestDtoList)
         {
-            var existingParticipacao = await _integranteCompromissoRepository.GetByIntegranteToken(requestDto.IntegranteToken);
-            if (existingParticipacao != null)
+            // Quem já está na divisão deste compromisso é ignorado, não duplicado.
+            var jaParticipa = compromisso.Participacoes
+                .Any(p => p.Integrante != null && p.Integrante.Token == requestDto.IntegranteToken);
+
+            if (jaParticipa)
+                continue;
+
+            var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
+
+            if (integrante is null)
+                throw new Exception("Integrante não foi encontrado pelo token informado.");
+
+            var integranteCompromisso = new IntegranteCompromisso
             {
-                var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
-                var integranteCompromisso = new IntegranteCompromisso
-                {
-                    IntegranteId = integrante.IntegranteId,
-                    CompromissoId = compromisso.CompromissoFinanceiroId,
-                    ValorDevedor = requestDto.ValorDevedor,
-                    ValorPago = requestDto.ValorPago,
-                    Integrante = integrante,
-                    Compromisso = compromisso
-                };
-                compromisso.Participacoes.Add(integranteCompromisso);
-            }
+                IntegranteId = integrante.IntegranteId,
+                CompromissoId = compromisso.CompromissoFinanceiroId,
+                ValorDevedor = requestDto.ValorDevedor,
+                ValorPago = requestDto.ValorPago,
+                Integrante = integrante,
+                Compromisso = compromisso
+            };
+            compromisso.Participacoes.Add(integranteCompromisso);
         }
 
         compromisso = await _compromissoFinanceiroRepository.Update(compromisso);
@@ -162,7 +173,10 @@ public class CompromissoFinanceiroService
     public async Task RemoveIntegrante(string integranteCompromissoToken)
     {
         var integranteCompromisso = await _integranteCompromissoRepository.GetByToken(integranteCompromissoToken);
-        
+
+        if (integranteCompromisso is null)
+            throw new Exception("Participação não encontrada pelo token informado.");
+
         await _integranteCompromissoRepository.Delete(integranteCompromisso);
     }
     
