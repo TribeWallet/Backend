@@ -71,6 +71,7 @@ public class UsuarioController: ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{usuarioToken}/dashboard")]
     public async Task<IActionResult> GetDashboardData(string usuarioToken)
     {

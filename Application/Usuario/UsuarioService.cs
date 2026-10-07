@@ -138,7 +138,7 @@ public class UsuarioService
         return responseDto;
     }
 
-    //Dá e precisa refatorar bastante essas funções seguintes
+    //Essas funções podem e devem ser devidamente refatoradas. Existem partes que aninham loops 4 vezes
     private DashboardResponseDTO ConvertDashDataToResponseDto(IEnumerable<Grupo> grupos, string usuarioToken)
     {
         var contagens =
@@ -166,6 +166,7 @@ public class UsuarioService
         int compromissosVencidosCount = 0;
         int totalCompromisssos = 0;
         int compromissosPagos = 0;
+        int pagamentosAtrasados = 0;
         
         float taxaDePontualidade = 0;
         
@@ -180,17 +181,27 @@ public class UsuarioService
                         if (integranteCompromisso.ValorPago < integranteCompromisso.ValorDevedor)
                         {
                             pagamentosPendentesCount++;
-                            TimeSpan diferencaDeDatas = compromisso.Data - DateTime.UtcNow;
-                            
-                            if (diferencaDeDatas.TotalDays < 7 &&  diferencaDeDatas.TotalDays >= 0)
+                            double diferencaDatasEmDias = (compromisso.Data - DateTime.UtcNow).TotalDays;
+
+                            if (diferencaDatasEmDias < 0)
+                            {
+                                pagamentosAtrasados++;
+                                compromissosVencidosCount++; 
+                            } else if (diferencaDatasEmDias < 7 &&  diferencaDatasEmDias >= 0)
                                 compromissosAVencerCount++;
 
-                            if (diferencaDeDatas.TotalDays < 0)
-                                compromissosVencidosCount++;
                         }
 
                         if (integranteCompromisso.ValorPago >= integranteCompromisso.ValorDevedor)
+                        {
                             compromissosPagos++;
+                            foreach (var pagamento in integranteCompromisso.Pagamentos)
+                            {
+                                double atrasoPagamentoEmDias = (compromisso.Data - pagamento.Data).TotalDays;
+                                if (atrasoPagamentoEmDias < 0)
+                                    pagamentosAtrasados++;
+                            }
+                        }
                         
                         totalCompromisssos++;
                     }
@@ -198,7 +209,7 @@ public class UsuarioService
             }
         }
         if (totalCompromisssos > 0)
-            taxaDePontualidade = (float) compromissosPagos / totalCompromisssos;
+            taxaDePontualidade = 1 - ((float) pagamentosAtrasados / (float) totalCompromisssos);
 
         return (gruposAtivosCount, pagamentosPendentesCount, compromissosAVencerCount, compromissosVencidosCount, taxaDePontualidade);
     }
@@ -221,11 +232,13 @@ public class UsuarioService
                             NomeCompromisso = compromisso.Titulo,
                             ImagemCompromissoUrl = compromisso.Imagem,
                             NomeGrupo = grupo.Nome,
+                            Categoria = compromisso.Categoria,
                             ValorDevedor = integranteCompromisso.ValorDevedor,
+                            ValorPago = integranteCompromisso.ValorPago,
                             SituacaoPagamento = SetSituacaoPagamento(integranteCompromisso),
                             DataVencimento = compromisso.Data,
-                            Categoria = compromisso.Categoria,
-                            Vencido = IsCompromissoVencido(compromisso)
+                            Vencido = IsCompromissoVencido(compromisso),
+                            DiasParaVencimento = CalculaDiasParaVencimento(compromisso)
                         };
 
                         ultimasTransacoesEProximosVencimentos.Add(transacao);
@@ -270,6 +283,12 @@ public class UsuarioService
             default:
                 return false;
         }
+    }
+
+    private int CalculaDiasParaVencimento(CompromissoFinanceiro compromisso)
+    {
+        int diferencaDatasEmDias = (compromisso.Data - DateTime.UtcNow).Days;
+        return diferencaDatasEmDias;
     }
     private static string HashSenha(string senha)
     {
