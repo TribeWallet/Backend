@@ -26,38 +26,22 @@ public class GrupoRepository : IGrupoRepository
 
     public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
     {
-        List<Grupo> grupos;
-        
-        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
+        var query = _dbContext.Grupos
+            .Include(g => g.Integrantes)
+            .ThenInclude(i => i.Usuario)
+            .Include(g => g.Compromissos)
+            .ThenInclude(c => c.Participacoes)
+            .ThenInclude(p => p.Integrante)
+            .ThenInclude(i => i.Usuario)
+            .Include(g => g.Compromissos)
+            .ThenInclude(c => c.Participacoes)
+            .ThenInclude(p => p.Pagamentos)
+            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken));
+
         if (!deleted)
-        {
-            grupos = await _dbContext.Grupos
-                .Include(g => g.Integrantes)
-                .ThenInclude(i => i.Usuario)
-                .Include(g => g.Compromissos)
-                .ThenInclude(c => c.Participacoes)
-                .ThenInclude(p => p.Pagamentos)
-                .Include(g => g.Integrantes)
-                .ThenInclude(i => i.Usuario)
-                .Where(g => g.DeletedAt == null)
-                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-                .ToListAsync();
+            query = query.Where(g => g.DeletedAt == null);
 
-            return grupos;
-        }
-        
-        // busca registros ativos e inativos
-            grupos = await _dbContext.Grupos
-                .Include(g => g.Integrantes)
-                .ThenInclude(i => i.Usuario)
-                .Include(g => g.Compromissos)
-                .ThenInclude(c => c.Participacoes)
-                .ThenInclude(p => p.Integrante)
-                .ThenInclude(i => i.Usuario)
-                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-                .ToListAsync();
-
-        return grupos;
+        return await query.ToListAsync();
     }
 
     public async Task<Grupo> Create(Grupo grupo)
