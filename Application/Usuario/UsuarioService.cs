@@ -147,6 +147,7 @@ public class UsuarioService
         var transacoesEVencimentos = OrgazinaTransacoesEVencimentos(grupos, usuarioToken);
         var responseDto = new DashboardResponseDTO
         {
+            UsuarioToken = usuarioToken,
             GruposAtivosCount = contagens.gruposAtivosCount,
             PagamentosPendentesCount = contagens.pagamentosPendentesCount,
             CompromissosAVencerCount = contagens.compromissosAVencerCount,

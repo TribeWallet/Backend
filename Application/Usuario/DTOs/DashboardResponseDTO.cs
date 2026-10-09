@@ -5,6 +5,7 @@ namespace TribeWallet.Application;
 
 public class DashboardResponseDTO
 {
+    public string UsuarioToken { get; set; }
     public int GruposAtivosCount { get; set; }
     public int PagamentosPendentesCount { get; set; }
     public int CompromissosAVencerCount { get; set; }
