@@ -60,6 +60,9 @@ public class ArquivoLocalService
             return string.Empty;
 
         string baseUrl = _config["STORAGE_BASE_URL"] ?? "http://localhost:5049/tribewallet";
+        
+        //temporario retorna nomeunico sem storage_base_url
+        return caminhoArmazenamento;
         return $"{baseUrl.TrimEnd('/')}/{caminhoArmazenamento.TrimStart('/')}";
     }
 

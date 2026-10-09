@@ -8,8 +8,11 @@ public class DashboardResponseDTO
     public string UsuarioToken { get; set; }
     public int GruposAtivosCount { get; set; }
     public int PagamentosPendentesCount { get; set; }
+    public int PagamentosCountTotal { get; set; }
+    public decimal ValorTotalPago { get; set; }
     public int CompromissosAVencerCount { get; set; }
     public int CompromissosVencidosCount { get; set; }
+    public int CompromissosCountTotal { get; set; }
     public float TaxaDePontualidade { get; set; }
     public ICollection<IntegranteCompromissoDashResponseDTO> TransacoesEVencimentos { get; set; }
 }

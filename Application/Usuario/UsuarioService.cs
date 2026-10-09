@@ -150,8 +150,11 @@ public class UsuarioService
             UsuarioToken = usuarioToken,
             GruposAtivosCount = contagens.gruposAtivosCount,
             PagamentosPendentesCount = contagens.pagamentosPendentesCount,
+            ValorTotalPago = contagens.totalPago,
+            PagamentosCountTotal = contagens.pagamentosCountTotal,
             CompromissosAVencerCount = contagens.compromissosAVencerCount,
             CompromissosVencidosCount = contagens.compromissosVencidosCount,
+            CompromissosCountTotal = contagens.compromissosCountTotal,
             TaxaDePontualidade = contagens.taxaDePontualidade,
             TransacoesEVencimentos  = transacoesEVencimentos
         };
@@ -159,7 +162,7 @@ public class UsuarioService
         return responseDto;
     }
     
-    private (int gruposAtivosCount, int pagamentosPendentesCount, int compromissosAVencerCount, int compromissosVencidosCount, float taxaDePontualidade) CalculaContagens(IEnumerable<Grupo> grupos, string usuarioToken)
+    private (int gruposAtivosCount, int pagamentosPendentesCount, int pagamentosCountTotal, decimal totalPago, int compromissosAVencerCount, int compromissosVencidosCount, int compromissosCountTotal, float taxaDePontualidade) CalculaContagens(IEnumerable<Grupo> grupos, string usuarioToken)
     {
         int gruposAtivosCount = grupos.Count();
         int pagamentosPendentesCount = 0;
@@ -168,8 +171,9 @@ public class UsuarioService
         int totalCompromisssos = 0;
         int compromissosPagos = 0;
         int pagamentosAtrasados = 0;
-        
+        int pagamentosCountTotal = 0;
         float taxaDePontualidade = 0;
+        decimal totalPago = 0;
         
         foreach (var grupo in grupos)
         {
@@ -203,7 +207,10 @@ public class UsuarioService
                                     pagamentosAtrasados++;
                             }
                         }
-                        
+
+                        if (integranteCompromisso.ValorPago >= 0)
+                            pagamentosCountTotal++;
+                        totalPago += integranteCompromisso.ValorPago;
                         totalCompromisssos++;
                     }
                 }
@@ -212,7 +219,7 @@ public class UsuarioService
         if (totalCompromisssos > 0)
             taxaDePontualidade = 1 - ((float) pagamentosAtrasados / (float) totalCompromisssos);
 
-        return (gruposAtivosCount, pagamentosPendentesCount, compromissosAVencerCount, compromissosVencidosCount, taxaDePontualidade);
+        return (gruposAtivosCount, pagamentosPendentesCount,pagamentosCountTotal, totalPago, compromissosAVencerCount, compromissosVencidosCount, totalCompromisssos, taxaDePontualidade);
     }
 
     private ICollection<IntegranteCompromissoDashResponseDTO> OrgazinaTransacoesEVencimentos(IEnumerable<Grupo> grupos, string usuarioToken)
@@ -298,7 +305,7 @@ public class UsuarioService
     
     private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
     {
-        var imagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem);
+        var imageUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem);
         var reponseDto = new UsuarioResponseDTO
         {
             UsuarioToken = usuario.Token,
@@ -306,7 +313,7 @@ public class UsuarioService
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
             Username = usuario.Username,
-            ImagemUrl = imagemUrl
+            ImageUrl = imageUrl
         };
 
         return reponseDto;
