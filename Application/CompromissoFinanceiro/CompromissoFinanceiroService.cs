@@ -49,6 +49,19 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
+    public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByUsuarioToken(string usuatioToken, bool deleted)
+    {
+        var compromissos = await _compromissoFinanceiroRepository.GetAllByUsuarioToken(usuatioToken, deleted);
+        var responseDto = new List<CompromissoFinanceiroResponseDTO>();
+        foreach (var compromisso in compromissos)
+        {
+            var compromissoResponseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
+            responseDto.Add(compromissoResponseDto);
+        }
+
+        return responseDto;
+    }
+
     public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
         var compromissos = await _compromissoFinanceiroRepository.GetAllByGrupoToken(grupoToken, deleted);

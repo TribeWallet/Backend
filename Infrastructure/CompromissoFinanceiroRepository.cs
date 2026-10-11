@@ -45,6 +45,22 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
         return await compromissos.ToListAsync();
     }
 
+    public async Task<ICollection<CompromissoFinanceiro>> GetAllByUsuarioToken(string usuarioToken, bool deleted = false)
+    {
+        var compromissos = _dbContext.CompromissosFinanceiros
+            .Where(c => c.Participacoes
+                .Any(p => p.Integrante.Usuario.Token == usuarioToken))
+            .Include(c => c.Grupo)
+            .Include(c => c.Participacoes)
+            .ThenInclude(p => p.Integrante)
+            .ThenInclude(i => i.Usuario);
+
+        if (!deleted)
+            compromissos.Where(c => c.DeletedAt == null);
+        
+        return await compromissos.ToListAsync();
+    }
+
     public async Task<ICollection<CompromissoFinanceiro>> GetAllByGrupoToken(string grupoToken, bool deleted = false)
     {
         var compromissos = new List<CompromissoFinanceiro>();
