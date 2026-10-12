@@ -73,7 +73,7 @@ public class GrupoIntegranteCommonService
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
             Username = usuario.Username,
-            ImagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem),
+            ImageUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem),
             DeletedAt =  usuario.DeletedAt
         };
         

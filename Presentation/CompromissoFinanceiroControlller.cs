@@ -34,6 +34,21 @@ public class CompromissoFinanceiroControlller : ControllerBase
         }
     }
 
+    [HttpGet("usuario/{usuarioToken}")]
+    public async Task<IActionResult> GetAllByUsuarioToken(string usuarioToken, bool deleted)
+    {
+        try
+        {
+            var responseDto = await _compromissoFinanceiroService.GetAllByUsuarioToken(usuarioToken, deleted);
+
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
     [HttpGet("{grupoToken}")]
     public async Task<IActionResult> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
