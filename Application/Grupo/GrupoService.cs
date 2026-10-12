@@ -28,35 +28,18 @@ public class GrupoService
         _integranteCompromissoRepository = integranteCompromissoRepository;
     }
 
-    public async Task<List<GrupoResponseDTO>> GetAllByUsuarioToken(string token, bool deleted)
+    public async Task<List<GrupoResponseMainDTO>> GetAllByUsuarioToken(string token, bool deleted)
     {
         var grupos = await _grupoRepository.GetAllByUsuarioToken(token, deleted);
-        var responseDto = new List<GrupoResponseDTO>();
+        var reponseList = new List<GrupoResponseMainDTO>();
 
         foreach (var grupo in grupos)
         {
-            var compromissosResponseDtoList = new List<CompromissoFinanceiroResponseDTO>();
-            foreach (var compromisso in grupo.Compromissos)
-            {
-                
-                //em ConvertCompromissoToResponseDto, parcial não busca o grupo de novo e adiciona dentro de compromissos.
-                var compromissoResponseDto = await _compromissoFinanceiroService.ConvertCompromissoToResponseDto(compromisso, parcial: true);
-                compromissosResponseDtoList.Add(compromissoResponseDto);
-            }
-            var integrantesDto = await _integranteService.GetAllByGrupoToken(grupo.Token, deleted);
-            var grupoDto = new GrupoResponseDTO
-            {
-                GrupoToken =  grupo.Token,
-                Nome = grupo.Nome,
-                Descricao = grupo.Descricao,
-                Compromissos = compromissosResponseDtoList,
-                DeletedAt = grupo.DeletedAt,
-                Integrantes = integrantesDto
-            };
-            responseDto.Add(grupoDto);
+            var responseDto = ConvertGrupoToResponseDto(grupo);
+            reponseList.Add(responseDto);
         }
         
-        return responseDto;
+        return reponseList;
     }
 
     public async Task<GrupoResponseDTO> GetByToken(string grupoToken, bool deleted)
@@ -147,5 +130,90 @@ public class GrupoService
         
         var responseDto = await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(grupo, deleted: false);
         return responseDto;
+    }
+
+    private GrupoResponseMainDTO ConvertGrupoToResponseDto(Grupo grupo)
+    {
+     
+        var valores = GetContagensEValores(grupo);
+        var integrantes = ConvertIntegrantesToResponseDto(grupo.Integrantes);
+        var compromissos = ConvertCompromissosToResumoDto(grupo.Compromissos);
+        var responseDto = new GrupoResponseMainDTO
+        {
+            GrupoToken =  grupo.Token,
+            Nome = grupo.Nome,
+            Descricao = grupo.Descricao,
+            IntegrantesCount = valores.integrantesCount,
+            CompromissosCount = valores.compromissosCount,
+            TotalEmAberto = valores.totalEmAberto,
+            TotalPago = valores.totalPago,
+            Integrantes = integrantes,
+            Compromissos = compromissos
+        };
+
+        return responseDto;
+    }
+    
+    private (int integrantesCount, int compromissosCount, decimal totalEmAberto, decimal totalPago) GetContagensEValores(
+        Grupo grupo)
+    {
+        int integranteCount = 0;
+        int compromissosCount = 0;
+        decimal totalEmAberto = 0;
+        decimal totalPago = 0;
+        
+        integranteCount = grupo.Integrantes.Count;
+        compromissosCount = grupo.Compromissos.Count;
+
+        foreach (var compromisso in grupo.Compromissos)
+        {
+            foreach (var participacao in compromisso.Participacoes)
+            {
+                    totalPago += participacao.ValorPago;
+                    totalEmAberto += (participacao.ValorDevedor - participacao.ValorDevedor);
+            }
+        }
+        
+        return (integranteCount, compromissosCount, totalEmAberto, totalPago);
+    }
+
+    private ICollection<IntegranteResumoDTO> ConvertIntegrantesToResponseDto(ICollection<Integrante> integrantes)
+    {
+        var responseList = new List<IntegranteResumoDTO>();
+        foreach (var integrante in integrantes)
+        {
+            var responseDto = new IntegranteResumoDTO
+            {
+                IntegranteToken = integrante.Token,
+                Nome = integrante.Usuario.Nome,
+                Sobrenome = integrante.Usuario.Sobrenome,
+                Email = integrante.Usuario.Email,
+                ImagemUrl = integrante.Usuario.Imagem
+            };
+            
+            responseList.Add(responseDto);
+        }
+
+        return responseList;
+    }
+
+    private ICollection<CompromissoFinanceiroResumoDTO> ConvertCompromissosToResumoDto(ICollection<CompromissoFinanceiro> compromissosFinanceiros)
+    {
+        var responseList = new List<CompromissoFinanceiroResumoDTO>();
+
+        foreach (var compromisso in compromissosFinanceiros)
+        {
+            var responseDto = new CompromissoFinanceiroResumoDTO
+            {
+                CompromissoFinanceiroToken = compromisso.Token,
+                Titulo = compromisso.Titulo,
+                ImagemUrl = compromisso.Imagem,
+                Categoria = compromisso.Categoria,
+                ValorTotal = compromisso.ValorTotal,
+                Data = compromisso.Data
+            };
+            responseList.Add(responseDto);
+        }
+        return responseList;
     }
 }
