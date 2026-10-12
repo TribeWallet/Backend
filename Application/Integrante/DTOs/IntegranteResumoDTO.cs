@@ -7,4 +7,5 @@ public class IntegranteResumoDTO
     public string Sobrenome { get; set; }
     public string Email { get; set; }
     public string ImagemUrl { get; set; }
+    public DateTime? DeletedAt { get; set; }
 }

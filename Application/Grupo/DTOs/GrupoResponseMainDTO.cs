@@ -15,6 +15,7 @@ public class GrupoResponseMainDTO
     public int CompromissosCount { get; set; }
     public decimal TotalEmAberto { get; set; }
     public decimal TotalPago { get; set; }
+    public DateTime? DeletedAt { get; set; }
     public ICollection<IntegranteResumoDTO> Integrantes { get; set; }
     public ICollection<CompromissoFinanceiroResumoDTO> Compromissos { get; set; }
 }

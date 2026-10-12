@@ -147,6 +147,7 @@ public class GrupoService
             CompromissosCount = valores.compromissosCount,
             TotalEmAberto = valores.totalEmAberto,
             TotalPago = valores.totalPago,
+            DeletedAt = grupo.DeletedAt,
             Integrantes = integrantes,
             Compromissos = compromissos
         };
@@ -188,7 +189,8 @@ public class GrupoService
                 Nome = integrante.Usuario.Nome,
                 Sobrenome = integrante.Usuario.Sobrenome,
                 Email = integrante.Usuario.Email,
-                ImagemUrl = integrante.Usuario.Imagem
+                ImagemUrl = integrante.Usuario.Imagem,
+                DeletedAt = integrante.DeletedAt
             };
             
             responseList.Add(responseDto);
@@ -210,7 +212,8 @@ public class GrupoService
                 ImagemUrl = compromisso.Imagem,
                 Categoria = compromisso.Categoria,
                 ValorTotal = compromisso.ValorTotal,
-                Data = compromisso.Data
+                Data = compromisso.Data,
+                DeletedAt = compromisso.DeletedAt
             };
             responseList.Add(responseDto);
         }
