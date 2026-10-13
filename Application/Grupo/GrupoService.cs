@@ -1,3 +1,4 @@
+using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Integrante;
@@ -17,8 +18,9 @@ public class GrupoService
     private readonly IntegranteService _integranteService;
     private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
     private readonly CompromissoFinanceiroService _compromissoFinanceiroService;
+    private readonly ArquivoLocalService _arquivoLocalService;
     
-    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService, CompromissoFinanceiroService compromissoFinanceiroService, IIntegranteCompromissoRepository integranteCompromissoRepository)
+    public GrupoService(IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IntegranteService integranteService, GrupoIntegranteCommonService grupoIntegranteCommonService, CompromissoFinanceiroService compromissoFinanceiroService, IIntegranteCompromissoRepository integranteCompromissoRepository, ArquivoLocalService arquivoLocalService)
     {
         _grupoRepository = grupoRepository;
         _integranteRepository = integranteRepository;
@@ -26,6 +28,7 @@ public class GrupoService
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
         _compromissoFinanceiroService = compromissoFinanceiroService;
         _integranteCompromissoRepository = integranteCompromissoRepository;
+        _arquivoLocalService = arquivoLocalService;
     }
 
     public async Task<List<GrupoResponseMainDTO>> GetAllByUsuarioToken(string token, bool deleted)
@@ -189,7 +192,7 @@ public class GrupoService
                 Nome = integrante.Usuario.Nome,
                 Sobrenome = integrante.Usuario.Sobrenome,
                 Email = integrante.Usuario.Email,
-                ImagemUrl = integrante.Usuario.Imagem,
+                ImagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(integrante.Usuario.Imagem),
                 DeletedAt = integrante.DeletedAt
             };
             
@@ -209,7 +212,7 @@ public class GrupoService
             {
                 CompromissoFinanceiroToken = compromisso.Token,
                 Titulo = compromisso.Titulo,
-                ImagemUrl = compromisso.Imagem,
+                ImagemUrl = _arquivoLocalService.ObterUrlLocalCompleta(compromisso.Imagem),
                 Categoria = compromisso.Categoria,
                 ValorTotal = compromisso.ValorTotal,
                 Data = compromisso.Data,

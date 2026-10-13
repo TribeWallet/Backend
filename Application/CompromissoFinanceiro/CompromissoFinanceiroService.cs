@@ -49,13 +49,13 @@ public class CompromissoFinanceiroService
         return responseDto;
     }
 
-    public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByUsuarioToken(string usuatioToken, bool deleted)
+    public async Task<List<CompromissoFinanceiroResponseMainDTO>> GetAllByUsuarioToken(string usuatioToken, bool deleted)
     {
         var compromissos = await _compromissoFinanceiroRepository.GetAllByUsuarioToken(usuatioToken, deleted);
-        var responseDto = new List<CompromissoFinanceiroResponseDTO>();
+        var responseDto = new List<CompromissoFinanceiroResponseMainDTO>();
         foreach (var compromisso in compromissos)
         {
-            var compromissoResponseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
+            var compromissoResponseDto = ConvertCompromissoToResponseMainDto(compromisso);
             responseDto.Add(compromissoResponseDto);
         }
 
@@ -337,6 +337,119 @@ public class CompromissoFinanceiroService
                 await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(compromisso.Grupo, deleted: false);
 
         return responseDto;
+    }
+
+    private CompromissoFinanceiroResponseMainDTO ConvertCompromissoToResponseMainDto(
+        CompromissoFinanceiro compromisso)
+    {
+        var valores = GetValoresCompromisso(compromisso);
+        var vencimento = GetVencimento(compromisso);
+        var responseDto = new CompromissoFinanceiroResponseMainDTO
+        {
+            CompromissoFinanceiroToken = compromisso.Token,
+            Titulo = compromisso.Titulo,
+            Imagem = _arquivoLocalService.ObterUrlLocalCompleta(compromisso.Imagem),
+            SituacaoPagamento = valores.situacaoPagamento,
+            DataVencimento = compromisso.Data,
+            DiasParaVencimento = vencimento.diasParaVencimento,
+            Vencido = vencimento.vencido,
+            TipoDivisao = compromisso.TipoDivisao,
+            ValorTotal = valores.valorTotal,
+            ValorPagoTotal = valores.valorPagoTotal,
+            ValorRestanteTotal = valores.valorRestanteTotal,
+            ProgressoPagamentos = valores.ProgressoPagamentos,
+            Categoria = compromisso.Categoria,
+            NomeGrupo = compromisso.Grupo.Nome,
+            IntegrantesQuitadosCount = valores.integrantesQuitadosCount,
+            IntegrantesDevendoCount = valores.integrantesDevendoCount,
+            IntegrantesTotalCount = valores.integrantesTotalCount,
+            Integrantes = ConvertIntegranteToNewResponseDto(compromisso.Participacoes),
+            DeletedAt = compromisso.DeletedAt
+        };
+
+        return responseDto;
+    }
+
+    private (int diasParaVencimento, bool vencido) GetVencimento(CompromissoFinanceiro compromisso)
+    {
+        int diasParaVencimento = 0;
+        DateTime dataVencimento = compromisso.Data;
+        DateTime hoje = DateTime.UtcNow;
+        bool vencido = false;
+        
+        diasParaVencimento = (dataVencimento - hoje).Days;
+        if (diasParaVencimento <= 0)
+            vencido = true;
+        
+        return (diasParaVencimento, vencido);
+    }
+    private (SituacaoPagamento situacaoPagamento, decimal valorTotal, decimal valorPagoTotal, decimal valorRestanteTotal, float ProgressoPagamentos, int integrantesQuitadosCount, int integrantesDevendoCount, int integrantesTotalCount) GetValoresCompromisso (CompromissoFinanceiro compromisso)
+    {
+        SituacaoPagamento situacaoPagamento;
+        decimal valorTotal = compromisso.ValorTotal;
+        decimal valorPagoTotal = 0;
+        decimal valorRestanteTotal = 0;
+        float progressoPagamentos = 0;
+        int integrantesQuitadosCount = 0;
+        int integrantesDevendoCount = 0;
+        int integrantesTotalCount = 0;
+        
+        foreach (var participacao in compromisso.Participacoes)
+        {
+            valorPagoTotal += participacao.ValorPago;
+
+            if (participacao.ValorPago < participacao.ValorDevedor)
+                integrantesDevendoCount++;
+            else
+                integrantesQuitadosCount++;
+
+            integrantesTotalCount++;
+        }
+
+        
+        valorRestanteTotal = (valorTotal - valorPagoTotal);
+        //caso a divisão passe de 1 (em casos da soma de pagamentos ultrapassar o valor total, o valor máximo fica como 1
+        progressoPagamentos = Math.Min((float)(valorPagoTotal / valorTotal), 1);
+
+        //para facilitar o calculo da situacao, usa-se o progresso que vai de 0 a 1
+        situacaoPagamento = progressoPagamentos switch
+        {
+            0 => SituacaoPagamento.Pendente,
+            1 => SituacaoPagamento.Pago,
+            _ => SituacaoPagamento.Parcial
+        };
+
+        return (situacaoPagamento, valorTotal,  valorPagoTotal, valorRestanteTotal, progressoPagamentos, integrantesQuitadosCount, integrantesDevendoCount, integrantesTotalCount);
+    }
+
+    private ICollection<IntegranteResponseFromCompromissoDTO> ConvertIntegranteToNewResponseDto(
+        ICollection<IntegranteCompromisso> participacoes)
+    {
+        var responseList = new List<IntegranteResponseFromCompromissoDTO>();
+
+        foreach (var participacao in participacoes)
+        {
+            decimal valorPago = participacao.ValorPago;
+            decimal valorDevedor = participacao.ValorDevedor;
+            decimal valorRestante = (valorDevedor - valorPago);
+            bool quitado = valorRestante <= 0;
+
+            var responseDto = new IntegranteResponseFromCompromissoDTO
+            {
+                IntegranteToken = participacao.Integrante.Token,
+                Nome = participacao.Integrante.Usuario.Nome,
+                Sobrenome = participacao.Integrante.Usuario.Sobrenome,
+                Email = participacao.Integrante.Usuario.Email,
+                ImagemUrl = participacao.Integrante.Usuario.Imagem,
+                ValorPago = valorPago,
+                ValorDevedor = valorDevedor,
+                ValorRestante = valorRestante,
+                Quitado = quitado,
+                DeletedAt = participacao.DeletedAt
+            };
+            responseList.Add(responseDto);
+        }
+        return responseList;
     }
     #endregion
     
