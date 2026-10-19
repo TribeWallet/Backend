@@ -34,6 +34,21 @@ public class CompromissoFinanceiroControlller : ControllerBase
         }
     }
 
+    [HttpGet("usuario/{usuarioToken}")]
+    public async Task<IActionResult> GetAllByUsuarioToken(string usuarioToken, bool deleted)
+    {
+        try
+        {
+            var responseDto = await _compromissoFinanceiroService.GetAllByUsuarioToken(usuarioToken, deleted);
+
+            return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
     [HttpGet("{grupoToken}")]
     public async Task<IActionResult> GetAllByGrupoToken(string grupoToken, bool deleted)
     {
@@ -49,7 +64,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
     
     [HttpPost("{grupoToken}")]
-    public async Task<IActionResult> CreateCompromissoFinanceiro([FromBody] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
+    public async Task<IActionResult> CreateCompromissoFinanceiro([FromForm] CreateCompromissoFinanceiroRequestDTO compromissoFinanceiroRequestDto, string grupoToken)
     {
         try
         {
@@ -63,7 +78,7 @@ public class CompromissoFinanceiroControlller : ControllerBase
     }
     
     [HttpPut("{compromissoToken}")]
-    public async Task<IActionResult> UpdateCompromisso([FromBody] UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
+    public async Task<IActionResult> UpdateCompromisso([FromForm] UpdateCompromissoFinanceiroRequestDTO requestDto, string compromissoToken)
     {
         try
         {

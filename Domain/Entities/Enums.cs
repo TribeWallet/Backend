@@ -47,3 +47,18 @@ public enum TipoAlteracao
     Atualizacao = 2,
     Exclusao = 3
 }
+
+/// <summary>Conteudo de arquivos guardados</summary>
+public enum TipoConteudo
+{
+    Jpeg = 1,
+    Png = 2,
+    Pdf = 3
+}
+
+public enum SituacaoPagamento
+{
+    Pendente = 1,
+    Pago = 2,
+    Parcial = 3,
+}

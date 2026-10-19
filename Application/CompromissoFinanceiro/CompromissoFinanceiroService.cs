@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
@@ -20,8 +21,9 @@ public class CompromissoFinanceiroService
     private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
     private readonly IntegranteService _integranteService;
     private readonly PagamentoService _pagamentoService;
+    private readonly ArquivoLocalService _arquivoLocalService;
 
-    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, PagamentoService pagamentoService)
+    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, PagamentoService pagamentoService, ArquivoLocalService arquivoLocalService)
     {
         _compromissoFinanceiroRepository = compromissoFinanceiroRepository;
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
@@ -30,6 +32,7 @@ public class CompromissoFinanceiroService
         _integranteRepository = integranteRepository;
         _integranteCompromissoRepository = integranteCompromissoRepository;
         _pagamentoService = pagamentoService;
+        _arquivoLocalService = arquivoLocalService;
     }
 
     public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByIntegranteToken(string integranteToken)
@@ -43,6 +46,19 @@ public class CompromissoFinanceiroService
             var compromissoResponseDto =  await ConvertCompromissoToResponseDto(compromisso, parcial: false);
             responseDto.Add(compromissoResponseDto);
         }
+        return responseDto;
+    }
+
+    public async Task<List<CompromissoFinanceiroResponseMainDTO>> GetAllByUsuarioToken(string usuatioToken, bool deleted)
+    {
+        var compromissos = await _compromissoFinanceiroRepository.GetAllByUsuarioToken(usuatioToken, deleted);
+        var responseDto = new List<CompromissoFinanceiroResponseMainDTO>();
+        foreach (var compromisso in compromissos)
+        {
+            var compromissoResponseDto = ConvertCompromissoToResponseMainDto(compromisso);
+            responseDto.Add(compromissoResponseDto);
+        }
+
         return responseDto;
     }
 
@@ -65,7 +81,7 @@ public class CompromissoFinanceiroService
         CreateCompromissoFinanceiroRequestDTO requestDto, string grupoToken)
     {
         var grupo = await _grupoRepository.GetByToken(grupoToken);
-        ICollection<IntegranteCompromisso> participacoes = new List<IntegranteCompromisso>();
+        var imagem = await _arquivoLocalService.SalvarArquivoLocalAsync(requestDto.Imagem);
         var compromisso = new CompromissoFinanceiro
         {
             GrupoId = grupo.GrupoId,
@@ -73,19 +89,19 @@ public class CompromissoFinanceiroService
             ValorTotal = requestDto.ValorTotal,
             Data = requestDto.Data,
             TipoDivisao = requestDto.TipoDivisao,
-            Imagem = requestDto.Imagem,
+            Imagem = imagem?.Path,
             Categoria = requestDto.Categoria,
             Grupo = grupo
         };
         await _compromissoFinanceiroRepository.Create(compromisso);
 
-        if (requestDto.Participacoes.Count > 0)
+        /*if (requestDto?.Participacoes?.Count > 0)
         {
-            participacoes = await SetUpParticipacoesEntities(requestDto.Participacoes, compromisso);
+            ICollection<IntegranteCompromisso> participacoes = await SetUpParticipacoesEntities(requestDto.Participacoes, compromisso);
             var divisao = new DividirValorRecord(compromisso, participacoes, requestDto.ValorTotal, requestDto.TipoDivisao);
             participacoes = AssignValorDevedorAndSave(divisao);
             await _integranteCompromissoRepository.CreateMultiple(participacoes);
-        }
+        }*/
         var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
         return responseDto;
     }
@@ -101,9 +117,16 @@ public class CompromissoFinanceiroService
         compromisso.ValorTotal = requestDto.ValorTotal ?? compromisso.ValorTotal;
         compromisso.Data = requestDto.Data ?? compromisso.Data;
         compromisso.TipoDivisao = requestDto.TipoDivisao ?? compromisso.TipoDivisao;
-        compromisso.Imagem = requestDto.Imagem ?? compromisso.Imagem;
         compromisso.Categoria = requestDto.Categoria ?? compromisso.Categoria;
 
+        //caso a imagem mude, deleta a imagem anterior e adiciona a nova
+        if (requestDto.Imagem != null)
+        {
+            await _arquivoLocalService.DeletarArquivo(compromisso.Imagem);
+            var newImagem = await _arquivoLocalService.SalvarArquivoLocalAsync(requestDto.Imagem);
+            compromisso.Imagem = newImagem == null ? compromisso.Imagem : newImagem.Path;
+        }
+        
         if (participacoes.Count > 0)
         {
             participacoes = IncludeValorExatoInParticipacao(requestDto.Participacoes, participacoes);
@@ -250,7 +273,7 @@ public class CompromissoFinanceiroService
     }
 
     private ICollection<IntegranteCompromisso> IncludeValorExatoInParticipacao(ICollection<CreateIntegranteCompromissoRequestDTO> requestDtoList,
-        ICollection<IntegranteCompromisso> participacoes)
+        ICollection<IntegranteCompromisso>? participacoes)
     {
         foreach (var requestDto in requestDtoList)
         {
@@ -302,7 +325,7 @@ public class CompromissoFinanceiroService
             ValorTotal = compromisso.ValorTotal,
             Data = compromisso.Data,
             TipoDivisao = compromisso.TipoDivisao,
-            Imagem = compromisso.Imagem,
+            Imagem = _arquivoLocalService.ObterUrlLocalCompleta(compromisso.Imagem),
             Categoria = compromisso.Categoria,
             Participacoes = participacoes,
             DeletedAt = compromisso.DeletedAt,
@@ -313,8 +336,120 @@ public class CompromissoFinanceiroService
             responseDto.Grupo =
                 await _grupoIntegranteCommonService.ConvertGrupoToResponseDto(compromisso.Grupo, deleted: false);
 
+        return responseDto;
+    }
+
+    private CompromissoFinanceiroResponseMainDTO ConvertCompromissoToResponseMainDto(
+        CompromissoFinanceiro compromisso)
+    {
+        var valores = GetValoresCompromisso(compromisso);
+        var vencimento = GetVencimento(compromisso);
+        var responseDto = new CompromissoFinanceiroResponseMainDTO
+        {
+            CompromissoFinanceiroToken = compromisso.Token,
+            Titulo = compromisso.Titulo,
+            Imagem = _arquivoLocalService.ObterUrlLocalCompleta(compromisso.Imagem),
+            SituacaoPagamento = valores.situacaoPagamento,
+            DataVencimento = compromisso.Data,
+            DiasParaVencimento = vencimento.diasParaVencimento,
+            Vencido = vencimento.vencido,
+            TipoDivisao = compromisso.TipoDivisao,
+            ValorTotal = valores.valorTotal,
+            ValorPagoTotal = valores.valorPagoTotal,
+            ValorRestanteTotal = valores.valorRestanteTotal,
+            ProgressoPagamentos = valores.ProgressoPagamentos,
+            Categoria = compromisso.Categoria,
+            NomeGrupo = compromisso.Grupo.Nome,
+            IntegrantesQuitadosCount = valores.integrantesQuitadosCount,
+            IntegrantesDevendoCount = valores.integrantesDevendoCount,
+            IntegrantesTotalCount = valores.integrantesTotalCount,
+            Integrantes = ConvertIntegranteToNewResponseDto(compromisso.Participacoes),
+            DeletedAt = compromisso.DeletedAt
+        };
 
         return responseDto;
+    }
+
+    private (int diasParaVencimento, bool vencido) GetVencimento(CompromissoFinanceiro compromisso)
+    {
+        int diasParaVencimento = 0;
+        DateTime dataVencimento = compromisso.Data;
+        DateTime hoje = DateTime.UtcNow;
+        bool vencido = false;
+        
+        diasParaVencimento = (dataVencimento - hoje).Days;
+        if (diasParaVencimento <= 0)
+            vencido = true;
+        
+        return (diasParaVencimento, vencido);
+    }
+    private (SituacaoPagamento situacaoPagamento, decimal valorTotal, decimal valorPagoTotal, decimal valorRestanteTotal, float ProgressoPagamentos, int integrantesQuitadosCount, int integrantesDevendoCount, int integrantesTotalCount) GetValoresCompromisso (CompromissoFinanceiro compromisso)
+    {
+        SituacaoPagamento situacaoPagamento;
+        decimal valorTotal = compromisso.ValorTotal;
+        decimal valorPagoTotal = 0;
+        decimal valorRestanteTotal = 0;
+        float progressoPagamentos = 0;
+        int integrantesQuitadosCount = 0;
+        int integrantesDevendoCount = 0;
+        int integrantesTotalCount = 0;
+        
+        foreach (var participacao in compromisso.Participacoes)
+        {
+            valorPagoTotal += participacao.ValorPago;
+
+            if (participacao.ValorPago < participacao.ValorDevedor)
+                integrantesDevendoCount++;
+            else
+                integrantesQuitadosCount++;
+
+            integrantesTotalCount++;
+        }
+
+        
+        valorRestanteTotal = (valorTotal - valorPagoTotal);
+        //caso a divisão passe de 1 (em casos da soma de pagamentos ultrapassar o valor total, o valor máximo fica como 1
+        progressoPagamentos = Math.Min((float)(valorPagoTotal / valorTotal), 1);
+
+        //para facilitar o calculo da situacao, usa-se o progresso que vai de 0 a 1
+        situacaoPagamento = progressoPagamentos switch
+        {
+            0 => SituacaoPagamento.Pendente,
+            1 => SituacaoPagamento.Pago,
+            _ => SituacaoPagamento.Parcial
+        };
+
+        return (situacaoPagamento, valorTotal,  valorPagoTotal, valorRestanteTotal, progressoPagamentos, integrantesQuitadosCount, integrantesDevendoCount, integrantesTotalCount);
+    }
+
+    private ICollection<IntegranteResponseFromCompromissoDTO> ConvertIntegranteToNewResponseDto(
+        ICollection<IntegranteCompromisso> participacoes)
+    {
+        var responseList = new List<IntegranteResponseFromCompromissoDTO>();
+
+        foreach (var participacao in participacoes)
+        {
+            decimal valorPago = participacao.ValorPago;
+            decimal valorDevedor = participacao.ValorDevedor;
+            decimal valorRestante = (valorDevedor - valorPago);
+            bool quitado = valorRestante <= 0;
+
+            var responseDto = new IntegranteResponseFromCompromissoDTO
+            {
+                IntegranteToken = participacao.Integrante.Token,
+                Nome = participacao.Integrante.Usuario.Nome,
+                Sobrenome = participacao.Integrante.Usuario.Sobrenome,
+                Email = participacao.Integrante.Usuario.Email,
+                ImagemUrl = participacao.Integrante.Usuario.Imagem,
+                ValorPago = valorPago,
+                ValorDevedor = valorDevedor,
+                ValorRestante = valorRestante,
+                Quitado = quitado,
+                DeletedAt = participacao.DeletedAt
+            };
+            responseList.Add(responseDto);
+        }
+        return responseList;
     }
     #endregion
     

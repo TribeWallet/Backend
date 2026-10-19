@@ -43,7 +43,7 @@ public class UsuarioController: ControllerBase
 
     [Authorize]
     [HttpPut("{usuarioToken}")]
-    public async Task<IActionResult> UpdateUsuario([FromBody] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
+    public async Task<IActionResult> UpdateUsuario([FromForm] UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         try
         {
@@ -64,6 +64,21 @@ public class UsuarioController: ControllerBase
         {
             var responseDto = await _usuarioService.GetByNome(nome);
             return  Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [Authorize]
+    [HttpGet("{usuarioToken}/dashboard")]
+    public async Task<IActionResult> GetDashboardData(string usuarioToken)
+    {
+        try
+        {
+            var responseDto = await _usuarioService.GetDashboardData(usuarioToken);
+            return Ok(responseDto);
         }
         catch (Exception e)
         {

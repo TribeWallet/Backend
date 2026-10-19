@@ -85,3 +85,5 @@ obj/*
 *.pdb
 *.cache
 .idea/
+Uploads/*
+

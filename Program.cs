@@ -2,8 +2,10 @@ using System.Text;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
@@ -30,6 +32,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options
     .UseNpgsql(ConnectionString.Montar(builder.Configuration))
     .UseSnakeCaseNamingConvention());
 
+//Configutações do JWT
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -105,6 +108,9 @@ builder.Services.AddScoped<GrupoIntegranteCommonService>();
 builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
 builder.Services.AddScoped<PagamentoService>();
 builder.Services.AddScoped<IIntegranteCompromissoRepository, IntegranteCompromissoRepository>();
+builder.Services.AddScoped<IArquivoRepository, ArquivoRepository >();
+builder.Services.AddScoped<ArquivoLocalService>();
+
 
 
 var app = builder.Build();
@@ -117,6 +123,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//Configurações de armazenamento de arquivos local
+string storagePath = app.Configuration["STORAGE_LOCAL_PATH"] 
+                     ?? Path.Combine(builder.Environment.ContentRootPath, "Uploads");
+
+string uploadsFolder = Path.GetFullPath(storagePath);
+
+Console.WriteLine($"Uploads folder: {uploadsFolder}");
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsFolder),
+    RequestPath = "/tribewallet"
+});
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

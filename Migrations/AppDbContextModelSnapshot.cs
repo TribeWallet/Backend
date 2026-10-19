@@ -22,6 +22,62 @@ namespace TribeWallet.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("TribeWallet.Domain.Entities.Arquivo", b =>
+                {
+                    b.Property<Guid>("ArquivoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("arquivo_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
+                        .HasColumnName("path");
+
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer")
+                        .HasColumnName("tipo");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("character(64)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("ArquivoId")
+                        .HasName("pk_arquivos");
+
+                    b.HasIndex("DeletedAt")
+                        .HasDatabaseName("ix_arquivos_deleted_at");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_arquivos_token");
+
+                    b.ToTable("arquivos", (string)null);
+                });
+
             modelBuilder.Entity("TribeWallet.Domain.Entities.CompromissoFinanceiro", b =>
                 {
                     b.Property<Guid>("CompromissoFinanceiroId")

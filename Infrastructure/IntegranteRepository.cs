@@ -39,7 +39,7 @@ public class IntegranteRepository : IIntegranteRepository
         
         return integrantes;
     }
-
+    
     public async Task<Integrante> GetByToken(string integranteToken)
     {
         var integrante = await _dbContext.Integrantes

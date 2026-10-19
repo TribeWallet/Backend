@@ -1,3 +1,9 @@
+using System.Runtime.InteropServices.JavaScript;
+using TribeWallet.Application.Arquivo;
+using TribeWallet.Application.Grupo;
+using TribeWallet.Application.IntegranteCompromisso;
+using TribeWallet.Application.IntegranteCompromisso.DTOs;
+
 namespace TribeWallet.Application.Usuario;
 using Services;
 using Domain.Entities;
@@ -8,12 +14,18 @@ public class UsuarioService
     private const int FatorBCrypt = 12;
     
     private readonly IUsuarioRepository _repository;
+    private readonly IGrupoRepository _grupoRepository;
+    private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository;
     private readonly JwtTokenService _jwtTokenService;
+    private readonly ArquivoLocalService _arquivoLocalService;
     
-    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService)
+    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService, IIntegranteCompromissoRepository integranteCompromissoRepository, IGrupoRepository grupoRepository)
     {
         _repository = repository;
         _jwtTokenService = jwtTokenService;
+        _arquivoLocalService = arquivoLocalService;
+        _integranteCompromissoRepository = integranteCompromissoRepository;
+        _grupoRepository = grupoRepository;
     }
     
     /*public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
@@ -40,17 +52,18 @@ public class UsuarioService
 
     public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
+        var imagemPerfil = await _arquivoLocalService.SalvarArquivoLocalAsync(createUsuarioRequestDto.Imagem);
         var usuario = new Usuario
         {
             Nome = createUsuarioRequestDto.Nome,
             Sobrenome = createUsuarioRequestDto.Sobrenome,
             Email = createUsuarioRequestDto.Email,
             Username = createUsuarioRequestDto.Username,
-            Imagem = createUsuarioRequestDto.Imagem ?? "",
+            Imagem = imagemPerfil?.Path, 
             HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
         usuario = await _repository.Create(usuario);
-        return ConvertToDto(usuario);
+        return ConvertUsuarioToResponseDto(usuario);
     }
 
     public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDto)
@@ -60,7 +73,7 @@ public class UsuarioService
 
         var loginResponseDto = new LoginResponseDTO
         {
-            UsuarioResponseDto = ConvertToDto(usuario),
+            UsuarioResponseDto = ConvertUsuarioToResponseDto(usuario),
             JwtToken = jwtToken,
         };
         return loginResponseDto;
@@ -69,14 +82,25 @@ public class UsuarioService
     public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
+        
         usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
         usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
         usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
-        usuario.Imagem = updateUsuarioRequestDto.Imagem ?? usuario.Imagem;
         usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
+
+        if (updateUsuarioRequestDto.Imagem != null)
+        {
+            var newImage = await _arquivoLocalService.SalvarArquivoLocalAsync(updateUsuarioRequestDto.Imagem);
+
+            if (newImage != null)
+            {
+                await _arquivoLocalService.DeletarArquivo(usuario.Imagem);
+                usuario.Imagem = newImage.Path;
+            }
+        }
         
         var newUsuario = await _repository.Update(usuario);
-        return ConvertToDto(newUsuario);
+        return ConvertUsuarioToResponseDto(newUsuario);
     }
 
     /// <summary>Marca o usuário como excluído. O registro fica no banco com a data em DeletedAt.</summary>
@@ -105,33 +129,191 @@ public class UsuarioService
 
         return responseDtoList;
     }
-    private static UsuarioResponseDTO ConvertToDto(Usuario usuario)
+
+    public async Task<DashboardResponseDTO> GetDashboardData(string usuarioToken)
     {
-        return new UsuarioResponseDTO
-        {
-            UsuarioToken = usuario.Token,
-            Nome = usuario.Nome,
-            Sobrenome = usuario.Sobrenome,
-            Email = usuario.Email,
-            Username = usuario.Username,
-            DeletedAt = usuario.DeletedAt
-        };
+        var grupos = await _grupoRepository.GetAllByUsuarioToken(usuarioToken, deleted: false);    
+
+        var responseDto = ConvertDashDataToResponseDto(grupos, usuarioToken);
+        return responseDto;
     }
 
+    //Essas funções podem e devem ser devidamente refatoradas. Existem partes que aninham loops 4 vezes
+    private DashboardResponseDTO ConvertDashDataToResponseDto(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        var contagens =
+            CalculaContagens(grupos, usuarioToken);
+
+        var transacoesEVencimentos = OrgazinaTransacoesEVencimentos(grupos, usuarioToken);
+        var responseDto = new DashboardResponseDTO
+        {
+            UsuarioToken = usuarioToken,
+            GruposAtivosCount = contagens.gruposAtivosCount,
+            PagamentosPendentesCount = contagens.pagamentosPendentesCount,
+            ValorTotalPago = contagens.totalPago,
+            PagamentosCountTotal = contagens.pagamentosCountTotal,
+            CompromissosAVencerCount = contagens.compromissosAVencerCount,
+            CompromissosVencidosCount = contagens.compromissosVencidosCount,
+            CompromissosCountTotal = contagens.compromissosCountTotal,
+            TaxaDePontualidade = contagens.taxaDePontualidade,
+            TransacoesEVencimentos  = transacoesEVencimentos
+        };
+        
+        return responseDto;
+    }
+    
+    private (int gruposAtivosCount, int pagamentosPendentesCount, int pagamentosCountTotal, decimal totalPago, int compromissosAVencerCount, int compromissosVencidosCount, int compromissosCountTotal, float taxaDePontualidade) CalculaContagens(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        int gruposAtivosCount = grupos.Count();
+        int pagamentosPendentesCount = 0;
+        int compromissosAVencerCount = 0;
+        int compromissosVencidosCount = 0;
+        int totalCompromisssos = 0;
+        int compromissosPagos = 0;
+        int pagamentosAtrasados = 0;
+        int pagamentosCountTotal = 0;
+        float taxaDePontualidade = 0;
+        decimal totalPago = 0;
+        
+        foreach (var grupo in grupos)
+        {
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                foreach (var integranteCompromisso in compromisso.Participacoes)
+                {
+                    if (integranteCompromisso.Integrante.Usuario.Token == usuarioToken)
+                    {
+                        if (integranteCompromisso.ValorPago < integranteCompromisso.ValorDevedor)
+                        {
+                            pagamentosPendentesCount++;
+                            double diferencaDatasEmDias = (compromisso.Data - DateTime.UtcNow).TotalDays;
+
+                            if (diferencaDatasEmDias < 0)
+                            {
+                                pagamentosAtrasados++;
+                                compromissosVencidosCount++; 
+                            } else if (diferencaDatasEmDias < 7 &&  diferencaDatasEmDias >= 0)
+                                compromissosAVencerCount++;
+
+                        }
+
+                        if (integranteCompromisso.ValorPago >= integranteCompromisso.ValorDevedor)
+                        {
+                            compromissosPagos++;
+                            foreach (var pagamento in integranteCompromisso.Pagamentos)
+                            {
+                                double atrasoPagamentoEmDias = (compromisso.Data - pagamento.Data).TotalDays;
+                                if (atrasoPagamentoEmDias < 0)
+                                    pagamentosAtrasados++;
+                            }
+                        }
+
+                        if (integranteCompromisso.ValorPago >= 0)
+                            pagamentosCountTotal++;
+                        totalPago += integranteCompromisso.ValorPago;
+                        totalCompromisssos++;
+                    }
+                }
+            }
+        }
+        if (totalCompromisssos > 0)
+            taxaDePontualidade = 1 - ((float) pagamentosAtrasados / (float) totalCompromisssos);
+
+        return (gruposAtivosCount, pagamentosPendentesCount,pagamentosCountTotal, totalPago, compromissosAVencerCount, compromissosVencidosCount, totalCompromisssos, taxaDePontualidade);
+    }
+
+    private ICollection<IntegranteCompromissoDashResponseDTO> OrgazinaTransacoesEVencimentos(IEnumerable<Grupo> grupos, string usuarioToken)
+    {
+        ICollection<IntegranteCompromissoDashResponseDTO> ultimasTransacoesEProximosVencimentos = new List<IntegranteCompromissoDashResponseDTO>();
+
+        foreach (var grupo in grupos)
+        {
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                foreach (var integranteCompromisso in compromisso.Participacoes)
+                {
+                    if (integranteCompromisso.Integrante.Usuario.Token == usuarioToken)
+                    {
+                        var transacao = new IntegranteCompromissoDashResponseDTO
+                        {
+                            IntegranteCompromissoToken = integranteCompromisso.Token,
+                            NomeCompromisso = compromisso.Titulo,
+                            ImagemCompromissoUrl = compromisso.Imagem,
+                            NomeGrupo = grupo.Nome,
+                            Categoria = compromisso.Categoria,
+                            ValorDevedor = integranteCompromisso.ValorDevedor,
+                            ValorPago = integranteCompromisso.ValorPago,
+                            SituacaoPagamento = SetSituacaoPagamento(integranteCompromisso),
+                            DataVencimento = compromisso.Data,
+                            Vencido = IsCompromissoVencido(compromisso),
+                            DiasParaVencimento = CalculaDiasParaVencimento(compromisso)
+                        };
+
+                        ultimasTransacoesEProximosVencimentos.Add(transacao);
+                    }
+                }
+            }
+        }
+
+        return ultimasTransacoesEProximosVencimentos;
+    }
+    
+    private SituacaoPagamento SetSituacaoPagamento(IntegranteCompromisso integranteCompromisso)
+    {
+        decimal valorPago = integranteCompromisso.ValorPago;
+        decimal valorDevedor = integranteCompromisso.ValorDevedor;
+        decimal diferenca = valorDevedor - valorPago;
+
+        if (valorPago == 0)
+        {
+            return SituacaoPagamento.Pendente;
+        }
+        if (diferenca == 0)
+        {
+            return SituacaoPagamento.Pago;
+        }
+        if (diferenca > 0)
+        {
+            return SituacaoPagamento.Parcial;
+        }
+
+        return SituacaoPagamento.Pago;
+    }
+
+    private bool IsCompromissoVencido(CompromissoFinanceiro compromisso)
+    {
+        double diferencaDatas = (compromisso.Data - DateTime.UtcNow).TotalDays;
+
+        switch (diferencaDatas)
+        {
+            case < 0:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private int CalculaDiasParaVencimento(CompromissoFinanceiro compromisso)
+    {
+        int diferencaDatasEmDias = (compromisso.Data - DateTime.UtcNow).Days;
+        return diferencaDatasEmDias;
+    }
     private static string HashSenha(string senha)
     {
         return BCrypt.Net.BCrypt.HashPassword(senha, FatorBCrypt);
     }
-
+    
     private UsuarioResponseDTO ConvertUsuarioToResponseDto(Usuario usuario)
     {
+        var imageUrl = _arquivoLocalService.ObterUrlLocalCompleta(usuario.Imagem);
         var reponseDto = new UsuarioResponseDTO
         {
             UsuarioToken = usuario.Token,
             Nome = usuario.Nome,
             Sobrenome = usuario.Sobrenome,
             Email = usuario.Email,
-            Username = usuario.Username
+            Username = usuario.Username,
+            ImageUrl = imageUrl
         };
 
         return reponseDto;

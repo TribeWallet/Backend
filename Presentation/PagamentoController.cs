@@ -18,7 +18,7 @@ public class PagamentoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> RegistrarPagamento([FromBody] CreatePagamentoRequestDTO dto)
+    public async Task<IActionResult> RegistrarPagamento([FromForm] CreatePagamentoRequestDTO dto)
     {
         try
         {
@@ -36,7 +36,7 @@ public class PagamentoController : ControllerBase
     }
 
     [HttpPut("{token}")]
-    public async Task<IActionResult> EditarPagamento(string token, [FromBody] UpdatePagamentoRequestDTO dto)
+    public async Task<IActionResult> EditarPagamento(string token, [FromForm] UpdatePagamentoRequestDTO dto)
     {
         try
         {

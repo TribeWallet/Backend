@@ -7,8 +7,9 @@ public class CompromissoFinanceiroResumoDTO
 {
     public string CompromissoFinanceiroToken { get; set; }
     public string Titulo { get; set; }
+    public string ImagemUrl { get; set; }
+    public string Categoria { get; set; }
     public decimal ValorTotal { get; set; }
     public DateTime Data { get; set; }
-    public GrupoResponseDTO? Grupo { get; set; }
-    public string Categoria { get; set; }
+    public DateTime? DeletedAt { get; set; }
 }

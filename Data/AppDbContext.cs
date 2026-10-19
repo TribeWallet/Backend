@@ -33,6 +33,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     /// <summary>Trilha de auditoria das alterações.</summary>
     public DbSet<HistoricoAlteracao> HistoricoAlteracoes => Set<HistoricoAlteracao>();
 
+    /// <summary>Metadados de arquivos</summary>
+    public DbSet<Arquivo> Arquivos => Set<Arquivo>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -46,6 +48,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigurarRelatorios(modelBuilder);
         ConfigurarNotificacoes(modelBuilder);
         ConfigurarHistoricoAlteracoes(modelBuilder);
+        ConfigurarArquivos(modelBuilder);
 
         ConfigurarTokens(modelBuilder);
         ConfigurarAuditoria(modelBuilder);

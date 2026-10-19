@@ -26,31 +26,22 @@ public class GrupoRepository : IGrupoRepository
 
     public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
     {
-        List<Grupo> grupos;
-        
-        // !deleted significa que ele vai buscar apenas registros ativos (deletedAt == null)
-        if (!deleted)
-        {
-            grupos = await _dbContext.Grupos
-                .Include(g => g.Integrantes)
-                .ThenInclude(i => i.Usuario)
-                .Include(g => g.Compromissos)
-                .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-                .Where(g => g.DeletedAt == null)
-                .ToListAsync();
-
-            return grupos;
-        }
-        
-        // busca registros ativos e inativos
-        grupos = await _dbContext.Grupos
+        var query = _dbContext.Grupos
             .Include(g => g.Integrantes)
             .ThenInclude(i => i.Usuario)
             .Include(g => g.Compromissos)
-            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken))
-            .ToListAsync();
+            .ThenInclude(c => c.Participacoes)
+            .ThenInclude(p => p.Integrante)
+            .ThenInclude(i => i.Usuario)
+            .Include(g => g.Compromissos)
+            .ThenInclude(c => c.Participacoes)
+            .ThenInclude(p => p.Pagamentos)
+            .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken));
 
-        return grupos;
+        if (!deleted)
+            query = query.Where(g => g.DeletedAt == null);
+
+        return await query.ToListAsync();
     }
 
     public async Task<Grupo> Create(Grupo grupo)
