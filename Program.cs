@@ -17,6 +17,7 @@ using TribeWallet.Infrastructure;
 using TribeWallet.Services;
 using TribeWallet.Application.Pagamento;
 using TribeWallet.Application.IntegranteCompromisso;
+using TribeWallet.Application.Relatorio;
 
 // Antes do CreateBuilder: é aqui que ASPNETCORE_URLS e ASPNETCORE_ENVIRONMENT saem do .env
 // e entram no processo, a tempo do host lê-los. TraversePath sobe os diretórios até achar
@@ -110,6 +111,7 @@ builder.Services.AddScoped<PagamentoService>();
 builder.Services.AddScoped<IIntegranteCompromissoRepository, IntegranteCompromissoRepository>();
 builder.Services.AddScoped<IArquivoRepository, ArquivoRepository >();
 builder.Services.AddScoped<ArquivoLocalService>();
+builder.Services.AddScoped<RelatorioService>();
 
 
 
