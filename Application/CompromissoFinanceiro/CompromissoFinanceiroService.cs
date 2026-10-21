@@ -347,6 +347,7 @@ public class CompromissoFinanceiroService
         var responseDto = new CompromissoFinanceiroResponseMainDTO
         {
             CompromissoFinanceiroToken = compromisso.Token,
+            GrupoToken = compromisso.Grupo.Token,
             Titulo = compromisso.Titulo,
             Imagem = _arquivoLocalService.ObterUrlLocalCompleta(compromisso.Imagem),
             SituacaoPagamento = valores.situacaoPagamento,
@@ -383,7 +384,9 @@ public class CompromissoFinanceiroService
         
         return (diasParaVencimento, vencido);
     }
-    private (SituacaoPagamento situacaoPagamento, decimal valorTotal, decimal valorPagoTotal, decimal valorRestanteTotal, float ProgressoPagamentos, int integrantesQuitadosCount, int integrantesDevendoCount, int integrantesTotalCount) GetValoresCompromisso (CompromissoFinanceiro compromisso)
+    private (SituacaoPagamento situacaoPagamento, decimal valorTotal, decimal valorPagoTotal, decimal valorRestanteTotal
+        , float ProgressoPagamentos, int integrantesQuitadosCount, int integrantesDevendoCount, int
+        integrantesTotalCount) GetValoresCompromisso(CompromissoFinanceiro compromisso)
     {
         SituacaoPagamento situacaoPagamento;
         decimal valorTotal = compromisso.ValorTotal;
@@ -426,9 +429,16 @@ public class CompromissoFinanceiroService
         ICollection<IntegranteCompromisso> participacoes)
     {
         var responseList = new List<IntegranteResponseFromCompromissoDTO>();
-
+        
         foreach (var participacao in participacoes)
         {
+            var metodosDict = new Dictionary<MetodoPagamento, decimal>();
+            foreach (var pagamento in participacao.Pagamentos)
+            {
+                metodosDict.TryAdd(pagamento.Metodo, 0);
+                metodosDict[pagamento.Metodo]+= pagamento.Valor;
+            }
+            
             decimal valorPago = participacao.ValorPago;
             decimal valorDevedor = participacao.ValorDevedor;
             decimal valorRestante = (valorDevedor - valorPago);
@@ -437,6 +447,7 @@ public class CompromissoFinanceiroService
             var responseDto = new IntegranteResponseFromCompromissoDTO
             {
                 IntegranteToken = participacao.Integrante.Token,
+                UsuarioToken = participacao.Integrante.Usuario.Token,
                 Nome = participacao.Integrante.Usuario.Nome,
                 Sobrenome = participacao.Integrante.Usuario.Sobrenome,
                 Email = participacao.Integrante.Usuario.Email,
@@ -444,11 +455,13 @@ public class CompromissoFinanceiroService
                 ValorPago = valorPago,
                 ValorDevedor = valorDevedor,
                 ValorRestante = valorRestante,
+                SomaPagamentosPorMetodo = metodosDict,
                 Quitado = quitado,
                 DeletedAt = participacao.DeletedAt
             };
             responseList.Add(responseDto);
         }
+        
         return responseList;
     }
     #endregion

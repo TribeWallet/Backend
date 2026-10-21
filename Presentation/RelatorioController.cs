@@ -6,7 +6,7 @@ namespace TribeWallet.Presentation;
 
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/relatorio")]
 [Authorize] // Exige que o usuário esteja logado
 public class RelatorioController : ControllerBase
 {

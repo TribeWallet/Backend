@@ -1,15 +1,39 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using TribeWallet.Application.Compromisso.DTOs;
+using TribeWallet.Application.CompromissoFinanceiro;
+using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Relatorio.DTOs;
-using TribeWallet.Domain.Entities;
+using TribeWallet.Application.Usuario;
 
 namespace TribeWallet.Application.Relatorio;
+using TribeWallet.Domain.Entities;
 
 public class RelatorioService
 {
-    public async Task<byte[]> GetByUserToken(string userToken)
+    private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IGrupoRepository _grupoRepository;
+    private readonly ICompromissoFinanceiroRepository _compromissoFinanceiroRepository;
+    private readonly UsuarioService _usuarioService;
+    private readonly GrupoService _grupoService;
+    private readonly CompromissoFinanceiroService _compromissoFinanceiroService;
+    
+    public RelatorioService(IUsuarioRepository usuarioRepository, IGrupoRepository grupoRepository, ICompromissoFinanceiroRepository compromissoFinanceiroRepository, UsuarioService usuarioService, GrupoService grupoService, CompromissoFinanceiroService compromissoFinanceiroService)
     {
+        _usuarioRepository = usuarioRepository;
+        _grupoRepository = grupoRepository;
+        _compromissoFinanceiroRepository = compromissoFinanceiroRepository;
+        _usuarioService = usuarioService;
+        _grupoService = grupoService;
+        _compromissoFinanceiroService = compromissoFinanceiroService;
+    }
+
+    public async Task<byte[]> GetByUserToken(string usuarioToken)
+    {
+        var dadosUsuario = await _usuarioRepository.GetByToken(usuarioToken);
+        var dadosCompromissos = await _compromissoFinanceiroService.GetAllByUsuarioToken(usuarioToken, deleted: false);
+        
         var mockDtoUsuario = new RelatorioResponseByUsuartioDTO
         {
             Tipo = TipoRelatorio.ExtratoIndividual,
@@ -91,10 +115,106 @@ public class RelatorioService
                 }
             }
         };
-        var reponseData = GeneratePdf(mockDtoGrupo);
+
+        var dataForPdf = PrepareDataByUsuario(dadosCompromissos, dadosUsuario);
+        var reponseData = GeneratePdf(dataForPdf);
         return reponseData;
     }
 
+    private RelatorioResponseByUsuartioDTO PrepareDataByUsuario(
+        List<CompromissoFinanceiroResponseMainDTO> compromissosData, Usuario usuarioData)
+    {
+        var totais = GetGruposAndCompromissos(compromissosData, usuarioData.Token);
+        var responseData = new RelatorioResponseByUsuartioDTO
+        {
+            NomeCompleto = $"{usuarioData.Nome} {usuarioData.Sobrenome}",
+            Tipo = TipoRelatorio.ExtratoIndividual,
+            DataHora = DateTime.Now,
+            TotalPago = totais.totalPago,
+            TotalDevido = totais.totalDevido,
+            Grupos =  totais.grupos,
+            TotaisPagosPorCategorias = totais.totaisPagosPorCategoria,
+            TotaisPagosPorMetodos = totais.totaisPagosPorMetodo,
+            CompromissosEmAberto = totais.compromissosEmAberto
+        };
+
+        return responseData;
+    }
+    
+    private (decimal totalPago, decimal totalDevido, 
+        List<UserGruposRelatorioResponseDTO> grupos,
+        List<CompromissoEmAbertoRelatorioResponseDTO> compromissosEmAberto,
+        List<CategoriasCompromissosRelatorioResponseDTO> totaisPagosPorCategoria, 
+        List<MetodosRelatorioResponseDTO> totaisPagosPorMetodo
+        ) GetGruposAndCompromissos(List<CompromissoFinanceiroResponseMainDTO> compromissosData, string usuarioToken)
+    {
+        decimal totalPagoResponse = 0;
+        decimal totalDevidoResponse = 0;
+        var compromissosEmAbertoResponse = new List<CompromissoEmAbertoRelatorioResponseDTO>();
+        var totaisPagosPorCategoriaResponse = new List<CategoriasCompromissosRelatorioResponseDTO>();
+        var totaisPagosPorMetodoResponse = new List<MetodosRelatorioResponseDTO>();
+
+        var gruposResponse = compromissosData
+            .SelectMany(c => c.Integrantes, (c, i) => new { c.GrupoToken, c.NomeGrupo, Integrante = i })
+            .Where(x => x.Integrante.UsuarioToken == usuarioToken)
+            .GroupBy(x => new { x.GrupoToken, x.NomeGrupo })
+            .Select(g => new UserGruposRelatorioResponseDTO
+            {
+                NomeGrupo = g.Key.NomeGrupo,
+                TotalPago = g.Sum(x => x.Integrante.ValorPago)
+            })
+            .ToList();
+        
+        totaisPagosPorCategoriaResponse = compromissosData
+            .SelectMany(c => c.Integrantes, (c, i) => new { c.Categoria, Integrante = i })
+            .Where(x => x.Integrante.UsuarioToken == usuarioToken)
+            .GroupBy(x => x.Categoria)
+            .Select(g => new CategoriasCompromissosRelatorioResponseDTO
+            {
+                Categoria = g.Key,
+                ValorPagoTotal = g.Sum(x => x.Integrante.ValorPago)
+            })
+            .ToList();
+
+        totaisPagosPorMetodoResponse = compromissosData
+            .SelectMany(c => c.Integrantes)
+            .Where(i => i.UsuarioToken == usuarioToken)
+            .SelectMany(i => i.SomaPagamentosPorMetodo)
+            .GroupBy(kvp => kvp.Key)
+            .Select(g => new MetodosRelatorioResponseDTO
+            {
+                MetodoPagamento = g.Key, 
+                TotalPago = g.Sum(kvp => kvp.Value)
+            })
+            .ToList();
+        foreach (var compromisso in compromissosData)
+        {
+            foreach (var integrante in compromisso.Integrantes)
+            {
+                if (integrante.UsuarioToken == usuarioToken)
+                {
+                    totalPagoResponse += integrante.ValorPago;
+                    totalDevidoResponse += integrante.ValorRestante;
+                    
+                    if (!integrante.Quitado)
+                    {
+                        var compromissoEmAberto = new CompromissoEmAbertoRelatorioResponseDTO
+                        {
+                            Nome = integrante.Nome,
+                            DataVencimento = compromisso.DataVencimento,
+                            ValorEmAberto = integrante.ValorDevedor
+                        };
+                        
+                        compromissosEmAbertoResponse.Add(compromissoEmAberto);
+                    }
+
+                }
+            }
+        }
+
+        return (totalPagoResponse, totalDevidoResponse, gruposResponse, compromissosEmAbertoResponse, totaisPagosPorCategoriaResponse, totaisPagosPorMetodoResponse);
+    }
+    
     private byte[] GeneratePdf(RelatorioResponseDTO responseDto)
     {
         QuestPDF.Settings.License = LicenseType.Community;
@@ -158,7 +278,7 @@ public class RelatorioService
                     // --- USER GROUPS (If User Report DTO) ---
                     if (responseDto is RelatorioResponseByUsuartioDTO userReportDto && userReportDto.Grupos?.Any() == true)
                     {
-                        column.Item().Text("Detalhamento de grupos").Bold().FontSize(12);
+                        column.Item().Text("Totais Pagos Para Cada Grupo").Bold().FontSize(12);
                         column.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
@@ -184,7 +304,7 @@ public class RelatorioService
                     // --- CATEGORIES BREAKDOWN ---
                     if (responseDto.TotaisPagosPorCategorias?.Any() == true)
                     {
-                        column.Item().Text("Totais Pagos por Categoria").Bold().FontSize(12);
+                        column.Item().Text("Totais Pagos Por Categoria").Bold().FontSize(12);
                         column.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
@@ -210,7 +330,7 @@ public class RelatorioService
                     // --- PAYMENT METHODS BREAKDOWN ---
                     if (responseDto.TotaisPagosPorMetodos?.Any() == true)
                     {
-                        column.Item().Text("Totalis Pagos por Métodos de Pagamento").Bold().FontSize(12);
+                        column.Item().Text("Totais Pagos Por Métodos de Pagamento").Bold().FontSize(12);
                         column.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
