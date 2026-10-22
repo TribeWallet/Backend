@@ -6,6 +6,7 @@ namespace TribeWallet.Application.Compromisso.DTOs;
 public class CompromissoFinanceiroResponseMainDTO
 {
     public string CompromissoFinanceiroToken { get; set; }
+    public string GrupoToken { get; set; }
     public string Titulo { get; set; }
     public string? Imagem { get; set; }
     public SituacaoPagamento SituacaoPagamento { get; set; }

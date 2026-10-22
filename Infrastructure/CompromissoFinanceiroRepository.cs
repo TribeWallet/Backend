@@ -52,6 +52,8 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
                 .Any(p => p.Integrante.Usuario.Token == usuarioToken))
             .Include(c => c.Grupo)
             .Include(c => c.Participacoes)
+            .ThenInclude(p => p.Pagamentos)
+            .Include(c => c.Participacoes)
             .ThenInclude(p => p.Integrante)
             .ThenInclude(i => i.Usuario);
 
