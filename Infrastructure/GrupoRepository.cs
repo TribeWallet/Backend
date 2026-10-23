@@ -27,14 +27,14 @@ public class GrupoRepository : IGrupoRepository
     public async Task<IEnumerable<Grupo>> GetAllByUsuarioToken(string usuarioToken, bool deleted)
     {
         var query = _dbContext.Grupos
-            .Include(g => g.Integrantes)
+            .Include(g => g.Integrantes.Where(i => i.DeletedAt == null))
             .ThenInclude(i => i.Usuario)
-            .Include(g => g.Compromissos)
-            .ThenInclude(c => c.Participacoes)
+            .Include(g => g.Compromissos.Where(c => c.DeletedAt == null))
+            .ThenInclude(c => c.Participacoes.Where(p => p.DeletedAt == null))
             .ThenInclude(p => p.Integrante)
             .ThenInclude(i => i.Usuario)
-            .Include(g => g.Compromissos)
-            .ThenInclude(c => c.Participacoes)
+            .Include(g => g.Compromissos.Where(c => c.DeletedAt == null))
+            .ThenInclude(c => c.Participacoes.Where(p => p.DeletedAt == null))
             .ThenInclude(p => p.Pagamentos)
             .Where(g => g.Integrantes.Any(i => i.Usuario.Token == usuarioToken));
 

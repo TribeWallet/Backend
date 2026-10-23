@@ -127,13 +127,13 @@ public class CompromissoFinanceiroService
             compromisso.Imagem = newImagem == null ? compromisso.Imagem : newImagem.Path;
         }
         
-        if (participacoes.Count > 0)
+        if (participacoes.Count > 0 && requestDto.Participacoes?.Count > 0)
         {
             participacoes = IncludeValorExatoInParticipacao(requestDto.Participacoes, participacoes);
             var divisao = new DividirValorRecord(compromisso, participacoes, compromisso.ValorTotal, compromisso.TipoDivisao);
             participacoes = AssignValorDevedorAndSave(divisao);
             foreach (var participacao in participacoes)
-            {   
+            {
                 await _integranteCompromissoRepository.Update(participacao);
             }
         }
