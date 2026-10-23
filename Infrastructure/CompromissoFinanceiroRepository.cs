@@ -16,16 +16,16 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
 
     public async Task<CompromissoFinanceiro> GetByToken(string token, bool deleted = false)
     {
-        var compromisso =  _dbContext.CompromissosFinanceiros
+        var compromisso = _dbContext.CompromissosFinanceiros
             .Where(c => c.Token == token)
             .Include(c => c.Grupo)
             .Include(c => c.Participacoes)
             .ThenInclude(p => p.Integrante)
-            .ThenInclude(i => i.Usuario);
+            .ThenInclude(i => i.Usuario)
+            .AsQueryable();
 
         if (!deleted)
-            compromisso
-                .Where(c => c.DeletedAt == null);
+            compromisso = compromisso.Where(c => c.DeletedAt == null);
         return await compromisso.FirstOrDefaultAsync();
     }
 
@@ -37,11 +37,12 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
             .Include(c => c.Grupo)
             .Include(c => c.Participacoes)
             .ThenInclude(p => p.Integrante)
-            .ThenInclude(i => i.Usuario);
+            .ThenInclude(i => i.Usuario)
+            .AsQueryable();
 
         if (!deleted)
-            compromissos.Where(c => c.DeletedAt == null);
-        
+            compromissos = compromissos.Where(c => c.DeletedAt == null);
+
         return await compromissos.ToListAsync();
     }
 
@@ -55,11 +56,12 @@ public class CompromissoFinanceiroRepository : ICompromissoFinanceiroRepository
             .ThenInclude(p => p.Pagamentos)
             .Include(c => c.Participacoes)
             .ThenInclude(p => p.Integrante)
-            .ThenInclude(i => i.Usuario);
+            .ThenInclude(i => i.Usuario)
+            .AsQueryable();
 
         if (!deleted)
-            compromissos.Where(c => c.DeletedAt == null);
-        
+            compromissos = compromissos.Where(c => c.DeletedAt == null);
+
         return await compromissos.ToListAsync();
     }
 

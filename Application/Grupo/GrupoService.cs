@@ -173,8 +173,8 @@ public class GrupoService
         {
             foreach (var participacao in compromisso.Participacoes)
             {
-                    totalPago += participacao.ValorPago;
-                    totalEmAberto += (participacao.ValorDevedor - participacao.ValorDevedor);
+                totalPago += participacao.ValorPago;
+                totalEmAberto += Math.Max(0, participacao.ValorDevedor - participacao.ValorPago);
             }
         }
         
