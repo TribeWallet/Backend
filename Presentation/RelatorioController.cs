@@ -6,7 +6,7 @@ namespace TribeWallet.Presentation;
 
 
 [ApiController]
-[Route("api/relatorio")]
+[Route("api/relatorios")]
 [Authorize] // Exige que o usuário esteja logado
 public class RelatorioController : ControllerBase
 {
@@ -17,7 +17,7 @@ public class RelatorioController : ControllerBase
         _relatorioService = relatorioService;
     }
 
-    [HttpGet("/usuario/{usuarioToken}")]
+    [HttpGet("usuario/{usuarioToken}")]
     public async Task<IActionResult> GetByUsuarioToken(string usuarioToken)
     {
         try
