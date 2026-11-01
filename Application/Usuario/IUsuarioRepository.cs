@@ -10,4 +10,5 @@ public interface IUsuarioRepository
     Task<Usuario> Update(Usuario usuario);
     Task<Usuario> Delete(Usuario usuario);
     Task<Usuario> Login(LoginRequestDTO loginRequestDto);
+    Task<Usuario?> GetByEmail(string email);
 }
