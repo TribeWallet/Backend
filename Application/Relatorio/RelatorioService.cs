@@ -141,6 +141,16 @@ public class RelatorioService
         var response = PrepareDataForUsuario(dadosCompromissos, dadosUsuario, grupoToken:grupoToken);
         return response;
     }
+
+    public async Task<byte[]> GenGrupoPdf(string usuarioToken, string grupoToken)
+    {
+        var dadosUsuario = await _usuarioRepository.GetByToken(usuarioToken);
+        var dadosCompromissos = await _compromissoFinanceiroService.GetAllByUsuarioToken(dadosUsuario.Token, deleted: false);
+        
+        var dataForPdf = PrepareDataForUsuario(dadosCompromissos, dadosUsuario, grupoToken:grupoToken);
+        var reponseData = GeneratePdf(dataForPdf);
+        return reponseData;
+    }
 private RelatorioResponseDTO PrepareDataForUsuario(
     List<CompromissoFinanceiroResponseMainDTO> compromissosData, 
     Usuario usuarioData, 

@@ -58,4 +58,18 @@ public class RelatorioController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpGet("usuario/{usuarioToken}/grupo/{grupoToken}/pdf")]
+    public async Task<IActionResult> GenPdfForGrupo(string usuarioToken, string grupoToken)
+    {
+        try
+        {
+            var relatoriobytes = await _relatorioService.GenGrupoPdf(usuarioToken, grupoToken);
+            var relatorioPdf = File(relatoriobytes, "application/pdf", $"relatorio-{usuarioToken}.pdf");
+            return relatorioPdf;        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
