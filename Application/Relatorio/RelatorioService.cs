@@ -94,7 +94,7 @@ public class RelatorioService
         {
             Tipo = TipoRelatorio.ResumoGrupo,
             DataHora = DateTime.Now,
-            Nome = "Despesas da República",
+            NomeGrupo = "Despesas da República",
             TotalPago = 5890.00m,
             TotalDevido = 1250.75m,
             
@@ -162,7 +162,8 @@ private RelatorioResponseDTO PrepareDataForUsuario(
     {
         return new RelatorioResponseByGrupoDTO
         {
-            Nome = dados.nomeGrupo,
+            NomeUsuario = $"{usuarioData.Nome} { usuarioData.Sobrenome}",
+            NomeGrupo = dados.nomeGrupo,
             Tipo = TipoRelatorio.ExtratoIndividual,
             DataHora = DateTime.Now,
             TotalPago = dados.totalPago,
@@ -310,9 +311,9 @@ private (decimal totalPago, decimal totalDevido,
                             {
                                 subTitle += $"Usuário: {userDto.NomeCompleto}";
                             }
-                            else if (responseDto is RelatorioResponseByGrupoDTO groupDto && !string.IsNullOrEmpty(groupDto.Nome))
+                            else if (responseDto is RelatorioResponseByGrupoDTO groupDto && !string.IsNullOrEmpty(groupDto.NomeGrupo))
                             {
-                                subTitle += $"Grupo: {groupDto.Nome}";
+                                subTitle += $"Grupo: {groupDto.NomeGrupo} - Usuário: {groupDto.NomeUsuario}";
                             }
 
                             col.Item().Text(subTitle).FontSize(12).SemiBold().FontColor(Colors.Grey.Darken1);

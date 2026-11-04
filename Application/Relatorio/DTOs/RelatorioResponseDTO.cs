@@ -22,7 +22,8 @@ public class RelatorioResponseByUsuartioDTO : RelatorioResponseDTO
 
 public class RelatorioResponseByGrupoDTO : RelatorioResponseDTO
 {
-    public string Nome { get; set; }
+    public string NomeUsuario { get; set; }
+    public string NomeGrupo { get; set; }
 }
 
 public class CategoriasCompromissosRelatorioResponseDTO
