@@ -108,4 +108,10 @@ public class UsuarioRepository : IUsuarioRepository
     return await _dbContext.Usuarios
         .FirstOrDefaultAsync(u => u.Email.ToLower() == email.Trim().ToLower() && u.DeletedAt == null);
 }
+
+    public async Task<Usuario?> GetById(Guid usuarioId)
+    {
+        return await _dbContext.Usuarios
+            .FirstOrDefaultAsync(u => u.UsuarioId == usuarioId && u.DeletedAt == null);
+    }
 }

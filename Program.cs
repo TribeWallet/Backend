@@ -6,6 +6,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using TribeWallet.Application.Arquivo;
+using TribeWallet.Application.ConviteGrupo;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
@@ -112,6 +113,9 @@ builder.Services.AddScoped<IIntegranteCompromissoRepository, IntegranteCompromis
 builder.Services.AddScoped<IArquivoRepository, ArquivoRepository >();
 builder.Services.AddScoped<ArquivoLocalService>();
 builder.Services.AddScoped<RelatorioService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IConviteGrupoRepository, ConviteGrupoRepository>();
+builder.Services.AddScoped<ConviteGrupoService>();
 
 
 

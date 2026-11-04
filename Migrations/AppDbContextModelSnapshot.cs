@@ -157,6 +157,69 @@ namespace TribeWallet.Migrations
                     b.ToTable("compromissos_financeiros", (string)null);
                 });
 
+            modelBuilder.Entity("TribeWallet.Domain.Entities.ConviteGrupo", b =>
+                {
+                    b.Property<Guid>("ConviteGrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("convite_grupo_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("CriadoPorUsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("criado_por_usuario_id");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("EmailConvidado")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email_convidado");
+
+                    b.Property<DateTime>("ExpiraEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_em");
+
+                    b.Property<Guid>("GrupoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_id");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("character(64)")
+                        .HasColumnName("token");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("ConviteGrupoId")
+                        .HasName("pk_convites_grupo");
+
+                    b.HasIndex("CriadoPorUsuarioId")
+                        .HasDatabaseName("ix_convites_grupo_criado_por_usuario_id");
+
+                    b.HasIndex("DeletedAt")
+                        .HasDatabaseName("ix_convites_grupo_deleted_at");
+
+                    b.HasIndex("GrupoId")
+                        .HasDatabaseName("ix_convites_grupo_grupo_id");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_convites_grupo_token");
+
+                    b.ToTable("convites_grupo", (string)null);
+                });
+
             modelBuilder.Entity("TribeWallet.Domain.Entities.Grupo", b =>
                 {
                     b.Property<Guid>("GrupoId")
@@ -722,6 +785,27 @@ namespace TribeWallet.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_compromissos_financeiros_grupos_grupo_id");
+
+                    b.Navigation("Grupo");
+                });
+
+            modelBuilder.Entity("TribeWallet.Domain.Entities.ConviteGrupo", b =>
+                {
+                    b.HasOne("TribeWallet.Domain.Entities.Usuario", "CriadoPorUsuario")
+                        .WithMany()
+                        .HasForeignKey("CriadoPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_convites_grupo_usuarios_criado_por_usuario_id");
+
+                    b.HasOne("TribeWallet.Domain.Entities.Grupo", "Grupo")
+                        .WithMany()
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_convites_grupo_grupos_grupo_id");
+
+                    b.Navigation("CriadoPorUsuario");
 
                     b.Navigation("Grupo");
                 });
