@@ -40,11 +40,13 @@ public class MetodosRelatorioResponseDTO
 public class CompromissoEmAbertoRelatorioResponseDTO
 {
     public string Nome { get; set; }
+    public string NomeGrupo { get; set; }
     public DateTime DataVencimento { get; set; }
     public decimal ValorEmAberto { get; set; }
 }
 public class UserGruposRelatorioResponseDTO
 {
+    public string GrupoToken { get; set; }
     public string NomeGrupo { get; set; }
     public decimal TotalPago { get; set; }
 }

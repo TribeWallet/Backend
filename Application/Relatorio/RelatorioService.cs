@@ -4,6 +4,7 @@ using QuestPDF.Infrastructure;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application.CompromissoFinanceiro;
 using TribeWallet.Application.Grupo;
+using TribeWallet.Application.Integrante;
 using TribeWallet.Application.Relatorio.DTOs;
 using TribeWallet.Application.Usuario;
 
@@ -15,11 +16,12 @@ public class RelatorioService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IGrupoRepository _grupoRepository;
     private readonly ICompromissoFinanceiroRepository _compromissoFinanceiroRepository;
+    private readonly IIntegranteRepository _integranteRepository;
     private readonly UsuarioService _usuarioService;
     private readonly GrupoService _grupoService;
     private readonly CompromissoFinanceiroService _compromissoFinanceiroService;
     
-    public RelatorioService(IUsuarioRepository usuarioRepository, IGrupoRepository grupoRepository, ICompromissoFinanceiroRepository compromissoFinanceiroRepository, UsuarioService usuarioService, GrupoService grupoService, CompromissoFinanceiroService compromissoFinanceiroService)
+    public RelatorioService(IUsuarioRepository usuarioRepository, IGrupoRepository grupoRepository, ICompromissoFinanceiroRepository compromissoFinanceiroRepository, UsuarioService usuarioService, GrupoService grupoService, CompromissoFinanceiroService compromissoFinanceiroService, IIntegranteRepository integranteRepository)
     {
         _usuarioRepository = usuarioRepository;
         _grupoRepository = grupoRepository;
@@ -27,9 +29,19 @@ public class RelatorioService
         _usuarioService = usuarioService;
         _grupoService = grupoService;
         _compromissoFinanceiroService = compromissoFinanceiroService;
+        _integranteRepository = integranteRepository;
+    }
+    
+    public async Task<RelatorioResponseDTO> GetByUsuarioToken(string usuarioToken)
+    {
+        var dadosUsuario = await _usuarioRepository.GetByToken(usuarioToken);
+        var dadosCompromissos = await _compromissoFinanceiroService.GetAllByUsuarioToken(usuarioToken, deleted: false);
+        
+        var response = PrepareDataForUsuario(dadosCompromissos, dadosUsuario);
+        return response;
     }
 
-    public async Task<byte[]> GetByUserToken(string usuarioToken)
+    public async Task<byte[]> GenUsuarioPdf(string usuarioToken)
     {
         var dadosUsuario = await _usuarioRepository.GetByToken(usuarioToken);
         var dadosCompromissos = await _compromissoFinanceiroService.GetAllByUsuarioToken(usuarioToken, deleted: false);
@@ -116,104 +128,150 @@ public class RelatorioService
             }
         };
 
-        var dataForPdf = PrepareDataByUsuario(dadosCompromissos, dadosUsuario);
+        var dataForPdf = PrepareDataForUsuario(dadosCompromissos, dadosUsuario);
         var reponseData = GeneratePdf(dataForPdf);
         return reponseData;
     }
 
-    private RelatorioResponseByUsuartioDTO PrepareDataByUsuario(
-        List<CompromissoFinanceiroResponseMainDTO> compromissosData, Usuario usuarioData)
+    public async Task<RelatorioResponseDTO> GetByIntegranteToken(string usuarioToken, string grupoToken)
     {
-        var totais = GetGruposAndCompromissos(compromissosData, usuarioData.Token);
-        var responseData = new RelatorioResponseByUsuartioDTO
+        var dadosUsuario = await _usuarioRepository.GetByToken(usuarioToken);
+        var dadosCompromissos = await _compromissoFinanceiroService.GetAllByUsuarioToken(dadosUsuario.Token, deleted: false);
+        
+        var response = PrepareDataForUsuario(dadosCompromissos, dadosUsuario, grupoToken:grupoToken);
+        return response;
+    }
+private RelatorioResponseDTO PrepareDataForUsuario(
+    List<CompromissoFinanceiroResponseMainDTO> compromissosData, 
+    Usuario usuarioData, 
+    string? grupoToken = null)
+{
+    var dados = GetCompromissosData(compromissosData, usuarioData.Token, grupoToken);
+
+    if (!string.IsNullOrEmpty(grupoToken))
+    {
+        return new RelatorioResponseByGrupoDTO
         {
-            NomeCompleto = $"{usuarioData.Nome} {usuarioData.Sobrenome}",
+            Nome = dados.nomeGrupo,
             Tipo = TipoRelatorio.ExtratoIndividual,
             DataHora = DateTime.Now,
-            TotalPago = totais.totalPago,
-            TotalDevido = totais.totalDevido,
-            Grupos =  totais.grupos,
-            TotaisPagosPorCategorias = totais.totaisPagosPorCategoria,
-            TotaisPagosPorMetodos = totais.totaisPagosPorMetodo,
-            CompromissosEmAberto = totais.compromissosEmAberto
+            TotalPago = dados.totalPago,
+            TotalDevido = dados.totalDevido,
+            TotaisPagosPorCategorias = dados.totaisPagosPorCategoria,
+            TotaisPagosPorMetodos = dados.totaisPagosPorMetodo,
+            CompromissosEmAberto = dados.compromissosEmAberto
         };
-
-        return responseData;
     }
-    
-    private (decimal totalPago, decimal totalDevido, 
-        List<UserGruposRelatorioResponseDTO> grupos,
-        List<CompromissoEmAbertoRelatorioResponseDTO> compromissosEmAberto,
-        List<CategoriasCompromissosRelatorioResponseDTO> totaisPagosPorCategoria, 
-        List<MetodosRelatorioResponseDTO> totaisPagosPorMetodo
-        ) GetGruposAndCompromissos(List<CompromissoFinanceiroResponseMainDTO> compromissosData, string usuarioToken)
-    {
-        decimal totalPagoResponse = 0;
-        decimal totalDevidoResponse = 0;
-        var compromissosEmAbertoResponse = new List<CompromissoEmAbertoRelatorioResponseDTO>();
-        var totaisPagosPorCategoriaResponse = new List<CategoriasCompromissosRelatorioResponseDTO>();
-        var totaisPagosPorMetodoResponse = new List<MetodosRelatorioResponseDTO>();
 
-        var gruposResponse = compromissosData
-            .SelectMany(c => c.Integrantes, (c, i) => new { c.GrupoToken, c.NomeGrupo, Integrante = i })
-            .Where(x => x.Integrante.UsuarioToken == usuarioToken)
+    return new RelatorioResponseByUsuartioDTO
+    {
+        NomeCompleto = $"{usuarioData.Nome} {usuarioData.Sobrenome}",
+        Tipo = TipoRelatorio.ExtratoIndividual,
+        DataHora = DateTime.Now,
+        TotalPago = dados.totalPago,
+        TotalDevido = dados.totalDevido,
+        Grupos = dados.grupos,
+        TotaisPagosPorCategorias = dados.totaisPagosPorCategoria,
+        TotaisPagosPorMetodos = dados.totaisPagosPorMetodo,
+        CompromissosEmAberto = dados.compromissosEmAberto
+    };
+}
+
+private (decimal totalPago, decimal totalDevido, 
+    string nomeGrupo,
+    ICollection<UserGruposRelatorioResponseDTO> grupos,
+    List<CompromissoEmAbertoRelatorioResponseDTO> compromissosEmAberto,
+    List<CategoriasCompromissosRelatorioResponseDTO> totaisPagosPorCategoria, 
+    List<MetodosRelatorioResponseDTO> totaisPagosPorMetodo
+    ) GetCompromissosData(
+        List<CompromissoFinanceiroResponseMainDTO> compromissosData, 
+        string usuarioToken, 
+        string? grupoToken = null)
+{
+    // Se foi passado um grupoToken, filtra a lista para aquele grupo
+    if (!string.IsNullOrEmpty(grupoToken))
+    {
+        compromissosData = compromissosData
+            .Where(c => c.GrupoToken == grupoToken)
+            .ToList();
+    }
+
+    decimal totalPagoResponse = 0;
+    decimal totalDevidoResponse = 0;
+    string nomeGrupoResponse = string.Empty;
+    var gruposResponse = new List<UserGruposRelatorioResponseDTO>();
+    var compromissosEmAbertoResponse = new List<CompromissoEmAbertoRelatorioResponseDTO>();
+
+    if (compromissosData.Any() && !string.IsNullOrEmpty(grupoToken))
+    {
+        nomeGrupoResponse = compromissosData.First().NomeGrupo ?? string.Empty;
+    }
+
+    if (string.IsNullOrEmpty(grupoToken))
+    {
+        gruposResponse = compromissosData
+            .SelectMany(c => c.Integrantes, (c, p) => new { GrupoToken = c.GrupoToken, NomeGrupo = c.NomeGrupo, Participacao = p })
+            .Where(x => x.Participacao.UsuarioToken == usuarioToken)
             .GroupBy(x => new { x.GrupoToken, x.NomeGrupo })
             .Select(g => new UserGruposRelatorioResponseDTO
             {
+                GrupoToken = g.Key.GrupoToken,
                 NomeGrupo = g.Key.NomeGrupo,
-                TotalPago = g.Sum(x => x.Integrante.ValorPago)
+                TotalPago = g.Sum(x => x.Participacao.ValorPago)
             })
             .ToList();
-        
-        totaisPagosPorCategoriaResponse = compromissosData
-            .SelectMany(c => c.Integrantes, (c, i) => new { c.Categoria, Integrante = i })
-            .Where(x => x.Integrante.UsuarioToken == usuarioToken)
-            .GroupBy(x => x.Categoria)
-            .Select(g => new CategoriasCompromissosRelatorioResponseDTO
-            {
-                Categoria = g.Key,
-                ValorPagoTotal = g.Sum(x => x.Integrante.ValorPago)
-            })
-            .ToList();
+    }
 
-        totaisPagosPorMetodoResponse = compromissosData
-            .SelectMany(c => c.Integrantes)
-            .Where(i => i.UsuarioToken == usuarioToken)
-            .SelectMany(i => i.SomaPagamentosPorMetodo)
-            .GroupBy(kvp => kvp.Key)
-            .Select(g => new MetodosRelatorioResponseDTO
-            {
-                MetodoPagamento = g.Key, 
-                TotalPago = g.Sum(kvp => kvp.Value)
-            })
-            .ToList();
-        foreach (var compromisso in compromissosData)
+    var totaisPagosPorCategoriaResponse = compromissosData
+        .SelectMany(c => c.Integrantes, (c, p) => new { c.Categoria, Participacao = p })
+        .Where(x => x.Participacao.UsuarioToken == usuarioToken)
+        .GroupBy(x => x.Categoria)
+        .Select(g => new CategoriasCompromissosRelatorioResponseDTO
         {
-            foreach (var integrante in compromisso.Integrantes)
-            {
-                if (integrante.UsuarioToken == usuarioToken)
-                {
-                    totalPagoResponse += integrante.ValorPago;
-                    totalDevidoResponse += integrante.ValorRestante;
-                    
-                    if (!integrante.Quitado)
-                    {
-                        var compromissoEmAberto = new CompromissoEmAbertoRelatorioResponseDTO
-                        {
-                            Nome = integrante.Nome,
-                            DataVencimento = compromisso.DataVencimento,
-                            ValorEmAberto = integrante.ValorDevedor
-                        };
-                        
-                        compromissosEmAbertoResponse.Add(compromissoEmAberto);
-                    }
+            Categoria = g.Key,
+            ValorPagoTotal = g.Sum(x => x.Participacao.ValorPago)
+        })
+        .ToList();
 
+    var totaisPagosPorMetodoResponse = compromissosData
+        .SelectMany(c => c.Integrantes)
+        .Where(i => i.UsuarioToken == usuarioToken)
+        .SelectMany(i => i.SomaPagamentosPorMetodo)
+        .GroupBy(kvp => kvp.Key)
+        .Select(g => new MetodosRelatorioResponseDTO
+        {
+            MetodoPagamento = g.Key, 
+            TotalPago = g.Sum(kvp => kvp.Value)
+        })
+        .ToList();
+
+    foreach (var compromisso in compromissosData)
+    {
+        foreach (var participacao in compromisso.Integrantes)
+        {
+            if (participacao.UsuarioToken == usuarioToken)
+            {
+                totalPagoResponse += participacao.ValorPago;
+                totalDevidoResponse += participacao.ValorRestante;
+                
+                if (!participacao.Quitado)
+                {
+                    var compromissoEmAberto = new CompromissoEmAbertoRelatorioResponseDTO
+                    {
+                        Nome = compromisso.Titulo,
+                        NomeGrupo = compromisso.NomeGrupo,
+                        DataVencimento = compromisso.DataVencimento,
+                        ValorEmAberto = participacao.ValorRestante
+                    };
+                    
+                    compromissosEmAbertoResponse.Add(compromissoEmAberto);
                 }
             }
         }
-
-        return (totalPagoResponse, totalDevidoResponse, gruposResponse, compromissosEmAbertoResponse, totaisPagosPorCategoriaResponse, totaisPagosPorMetodoResponse);
     }
+
+    return (totalPagoResponse, totalDevidoResponse, nomeGrupoResponse, gruposResponse, compromissosEmAbertoResponse, totaisPagosPorCategoriaResponse, totaisPagosPorMetodoResponse);
+}
     
     private byte[] GeneratePdf(RelatorioResponseDTO responseDto)
     {
@@ -362,6 +420,7 @@ public class RelatorioService
                             table.ColumnsDefinition(columns =>
                             {
                                 columns.RelativeColumn(3);
+                                columns.RelativeColumn(3);
                                 columns.RelativeColumn(2);
                                 columns.RelativeColumn(2);
                             });
@@ -369,6 +428,7 @@ public class RelatorioService
                             table.Header(header =>
                             {
                                 header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Nome").Bold();
+                                header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Grupo").Bold();
                                 header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Data de Vencimento").Bold();
                                 header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignRight().Text("Total em Aberto").Bold();
                             });
@@ -376,6 +436,7 @@ public class RelatorioService
                             foreach (var item in responseDto.CompromissosEmAberto)
                             {
                                 table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(item.Nome);
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(item.NomeGrupo);
                                 table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(item.DataVencimento.ToString("dd/MM/yyyy"));
                                 table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignRight().Text($"R$ {item.ValorEmAberto:N2}");
                             }

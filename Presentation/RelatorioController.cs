@@ -18,13 +18,40 @@ public class RelatorioController : ControllerBase
     }
 
     [HttpGet("usuario/{usuarioToken}")]
-    public async Task<IActionResult> GetByUsuarioToken(string usuarioToken)
+    public async Task<IActionResult> GetByUsarioToken(string usuarioToken)
     {
         try
         {
-            var relatoriobytes = await _relatorioService.GetByUserToken(usuarioToken);
+            var relatorio = await _relatorioService.GetByUsuarioToken(usuarioToken);
+            return Ok(relatorio);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    [HttpGet("usuario/{usuarioToken}/pdf")]
+    public async Task<IActionResult> GenPdfForUsuario(string usuarioToken)
+    {
+        try
+        {
+            var relatoriobytes = await _relatorioService.GenUsuarioPdf(usuarioToken);
             var relatorioPdf = File(relatoriobytes, "application/pdf", $"relatorio-{usuarioToken}.pdf");
             return relatorioPdf;
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("usuario/{usuarioToken}/grupo/{grupoToken}")]
+    public async Task<IActionResult> GetByGrupoToken(string usuarioToken, string grupoToken)
+    {
+        try
+        {
+            var relatorio = await _relatorioService.GetByIntegranteToken(usuarioToken, grupoToken);
+            return Ok(relatorio);
         }
         catch (Exception e)
         {
