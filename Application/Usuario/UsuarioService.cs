@@ -50,16 +50,15 @@ public class UsuarioService
         }).ToList();
     }   
 
-    public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
+public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
-        var imagemPerfil = await _arquivoLocalService.SalvarArquivoLocalAsync(createUsuarioRequestDto.Imagem);
         var usuario = new Usuario
         {
             Nome = createUsuarioRequestDto.Nome,
             Sobrenome = createUsuarioRequestDto.Sobrenome,
             Email = createUsuarioRequestDto.Email,
             Username = createUsuarioRequestDto.Username,
-            Imagem = imagemPerfil?.Path, 
+            Imagem = null, 
             HashSenha = HashSenha(createUsuarioRequestDto.Senha)
         };
         usuario = await _repository.Create(usuario);
@@ -77,6 +76,19 @@ public class UsuarioService
             JwtToken = jwtToken,
         };
         return loginResponseDto;
+    }
+
+public async Task RedefinirSenha(EsqueceuSenhaRequestDTO dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.NovaSenha))
+            throw new ArgumentException("E-mail e nova senha são obrigatórios.");
+
+        var usuario = await _repository.GetByEmail(dto.Email);
+        if (usuario == null)
+            throw new Exception("Usuário não encontrado com o e-mail informado.");
+
+        usuario.HashSenha = HashSenha(dto.NovaSenha);
+        await _repository.Update(usuario);
     }
 
     public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
