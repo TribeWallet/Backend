@@ -32,13 +32,26 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Register([FromForm] CreateUsuarioRequestDTO createUsuarioRequestDto)
+    public async Task<IActionResult> Register([FromBody] CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
         try
         {
             var responseDto = await _usuarioService.Create(createUsuarioRequestDto);
             return Ok(responseDto);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] EsqueceuSenhaRequestDTO requestDto)
+    {
+        try
+        {
+            await _usuarioService.RedefinirSenha(requestDto);
+            return Ok(new { mensagem = "Senha redefinida com sucesso." });
         }
         catch (Exception e)
         {

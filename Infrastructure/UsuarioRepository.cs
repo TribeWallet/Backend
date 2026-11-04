@@ -14,18 +14,24 @@ public class UsuarioRepository : IUsuarioRepository
         _dbContext = dbContext;
     }
 
-    
-    //TODO criar coluna calculada "Nome Completo", essa query não está funcionando como deveria
     public async Task<IEnumerable<Usuario>> GetByNome(string nome)
     {
+        if (string.IsNullOrWhiteSpace(nome))
+            return [];
+
+        var termo = nome.Trim().ToLower();
+
         var usuarios = await _dbContext.Usuarios
-            .Where(u => u.Nome.ToLower().Contains(nome.ToLower()) 
-                        || u.Sobrenome.ToLower().Contains(nome.ToLower()))
+            .Where(u => u.DeletedAt == null &&
+                        ((u.Nome + " " + u.Sobrenome).ToLower().Contains(termo)
+                         || u.Nome.ToLower().Contains(termo)
+                         || u.Sobrenome.ToLower().Contains(termo)
+                         || u.Username.ToLower().Contains(termo)))
             .ToListAsync();
 
         return usuarios;
     }
-
+    
     public async Task<IEnumerable<Usuario>> GetAll(bool deleted)
     {
         List<Usuario> usuarios;
@@ -96,4 +102,10 @@ public class UsuarioRepository : IUsuarioRepository
             throw new Exception("Usuário não encontrado pelo token informado");
         return usuario;
     }
+
+    public async Task<Usuario?> GetByEmail(string email)
+{
+    return await _dbContext.Usuarios
+        .FirstOrDefaultAsync(u => u.Email.ToLower() == email.Trim().ToLower() && u.DeletedAt == null);
+}
 }
