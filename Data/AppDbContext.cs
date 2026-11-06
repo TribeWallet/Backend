@@ -33,6 +33,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     /// <summary>Trilha de auditoria das alterações.</summary>
     public DbSet<HistoricoAlteracao> HistoricoAlteracoes => Set<HistoricoAlteracao>();
 
+    /// <summary>Convites para entrar em grupos por link.</summary>
+    public DbSet<ConviteGrupo> ConvitesGrupo => Set<ConviteGrupo>();
+
     /// <summary>Metadados de arquivos</summary>
     public DbSet<Arquivo> Arquivos => Set<Arquivo>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,6 +52,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         ConfigurarNotificacoes(modelBuilder);
         ConfigurarHistoricoAlteracoes(modelBuilder);
         ConfigurarArquivos(modelBuilder);
+        ConfigurarConvitesGrupo(modelBuilder);
 
         ConfigurarTokens(modelBuilder);
         ConfigurarAuditoria(modelBuilder);

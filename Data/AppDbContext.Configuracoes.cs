@@ -201,4 +201,24 @@ public partial class AppDbContext
             e.Property(a => a.Tipo).HasConversion<int>().IsRequired();
             e.Property(a => a.Path).HasMaxLength(1024).IsRequired();
         });
+
+    private static void ConfigurarConvitesGrupo(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<ConviteGrupo>(e =>
+        {
+            e.ToTable("convites_grupo");
+            e.HasKey(c => c.ConviteGrupoId);
+            e.Property(c => c.ConviteGrupoId).ValueGeneratedNever();
+            e.Property(c => c.EmailConvidado).HasMaxLength(254);
+            e.Property(c => c.ExpiraEm).HasColumnType("timestamp with time zone").IsRequired();
+
+            e.HasOne(c => c.Grupo)
+                .WithMany()
+                .HasForeignKey(c => c.GrupoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(c => c.CriadoPorUsuario)
+                .WithMany()
+                .HasForeignKey(c => c.CriadoPorUsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 }

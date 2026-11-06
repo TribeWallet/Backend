@@ -11,4 +11,5 @@ public interface IUsuarioRepository
     Task<Usuario> Delete(Usuario usuario);
     Task<Usuario> Login(LoginRequestDTO loginRequestDto);
     Task<Usuario?> GetByEmail(string email);
+    Task<Usuario?> GetById(Guid usuarioId);
 }
