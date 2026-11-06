@@ -5,6 +5,7 @@ using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
 using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.IntegranteCompromisso.DTOs;
+using TribeWallet.Application.Notificacoes;
 using TribeWallet.Application.Pagamento;
 using TribeWallet.Infrastructure;
 using TribeWallet.Services;
@@ -22,8 +23,9 @@ public class CompromissoFinanceiroService
     private readonly IntegranteService _integranteService;
     private readonly PagamentoService _pagamentoService;
     private readonly ArquivoLocalService _arquivoLocalService;
+    private readonly NotificacaoService _notificacaoService;
 
-    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, PagamentoService pagamentoService, ArquivoLocalService arquivoLocalService)
+    public CompromissoFinanceiroService(ICompromissoFinanceiroRepository compromissoFinanceiroRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, IntegranteService integranteService, IGrupoRepository grupoRepository, IIntegranteRepository integranteRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, PagamentoService pagamentoService, ArquivoLocalService arquivoLocalService, NotificacaoService notificacaoService)
     {
         _compromissoFinanceiroRepository = compromissoFinanceiroRepository;
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
@@ -33,6 +35,7 @@ public class CompromissoFinanceiroService
         _integranteCompromissoRepository = integranteCompromissoRepository;
         _pagamentoService = pagamentoService;
         _arquivoLocalService = arquivoLocalService;
+        _notificacaoService = notificacaoService;
     }
 
     public async Task<List<CompromissoFinanceiroResponseDTO>> GetAllByIntegranteToken(string integranteToken)
@@ -112,6 +115,10 @@ public class CompromissoFinanceiroService
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
         var participacoes = await _integranteCompromissoRepository.GetAllByCompromissoToken(compromissoToken);
+
+        var tituloAnterior = compromisso.Titulo;
+        var valorAnterior = compromisso.ValorTotal;
+        var dataAnterior = compromisso.Data;
         
         compromisso.Titulo = requestDto.Titulo ?? compromisso.Titulo;
         compromisso.ValorTotal = requestDto.ValorTotal ?? compromisso.ValorTotal;
@@ -139,6 +146,8 @@ public class CompromissoFinanceiroService
         }
         await _compromissoFinanceiroRepository.Update(compromisso);
 
+        await NotificarAlteracao(compromisso, participacoes, tituloAnterior, valorAnterior, dataAnterior);
+
         var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
         
         return  responseDto;
@@ -150,16 +159,28 @@ public class CompromissoFinanceiroService
         if (compromisso is null)
             throw new Exception("Compromisso não encontrado pelo token informado.");
 
+        // Quem participava é guardado antes: depois da exclusão não há mais a quem avisar.
+        var usuariosAvisados = compromisso.Participacoes
+            .Where(p => p.Integrante != null && p.DeletedAt == null)
+            .Select(p => p.Integrante!.UsuarioId)
+            .ToList();
+
         // As participações vêm carregadas com o compromisso: dá para excluí-las direto.
         foreach (var participacao in compromisso.Participacoes)
         {
             await _integranteCompromissoRepository.Delete(participacao);
         }
         await _compromissoFinanceiroRepository.Delete(compromisso);
+
+        var ator = await _notificacaoService.NomeDoAtor();
+        await _notificacaoService.Notificar(usuariosAvisados, TipoNotificacao.AlteracaoCompromisso,
+            nameof(Domain.Entities.CompromissoFinanceiro), compromisso.CompromissoFinanceiroId,
+            $"{ator} excluiu o compromisso {compromisso.Titulo}.");
     }
     public async Task<CompromissoFinanceiroResponseDTO> AddIntegrante(List<CreateIntegranteCompromissoRequestDTO> requestDtoList, string compromissoToken)
     {
         var compromisso = await _compromissoFinanceiroRepository.GetByToken(compromissoToken);
+        var incluidos = new List<(Guid UsuarioId, decimal Valor)>();
 
         foreach (var requestDto in requestDtoList)
         {
@@ -185,9 +206,15 @@ public class CompromissoFinanceiroService
                 Compromisso = compromisso
             };
             compromisso.Participacoes.Add(integranteCompromisso);
+            incluidos.Add((integrante.UsuarioId, requestDto.ValorDevedor));
         }
 
         compromisso = await _compromissoFinanceiroRepository.Update(compromisso);
+
+        foreach (var (usuarioId, valor) in incluidos)
+            await _notificacaoService.Notificar([usuarioId], TipoNotificacao.NovoCompromisso,
+                nameof(Domain.Entities.CompromissoFinanceiro), compromisso.CompromissoFinanceiroId,
+                $"Você foi incluído em {compromisso.Titulo}. Sua parte: {NotificacaoService.Moeda(valor)}.");
         var responseDto = await ConvertCompromissoToResponseDto(compromisso, parcial: false);
 
         return responseDto;
@@ -201,8 +228,36 @@ public class CompromissoFinanceiroService
             throw new Exception("Participação não encontrada pelo token informado.");
 
         await _integranteCompromissoRepository.Delete(integranteCompromisso);
+
+        if (integranteCompromisso.Integrante != null && integranteCompromisso.Compromisso != null)
+            await _notificacaoService.Notificar([integranteCompromisso.Integrante.UsuarioId],
+                TipoNotificacao.AlteracaoCompromisso, nameof(Domain.Entities.CompromissoFinanceiro),
+                integranteCompromisso.CompromissoId,
+                $"Você foi removido de {integranteCompromisso.Compromisso.Titulo}.");
     }
     
+    /// <summary>Avisa os participantes do que mudou; sem mudança relevante, só diz que foi alterado.</summary>
+    private async Task NotificarAlteracao(CompromissoFinanceiro compromisso,
+        ICollection<IntegranteCompromisso> participacoes, string tituloAnterior, decimal valorAnterior,
+        DateTime dataAnterior)
+    {
+        var mudancas = new List<string>();
+        if (compromisso.Titulo != tituloAnterior)
+            mudancas.Add($"agora se chama {compromisso.Titulo}");
+        if (compromisso.ValorTotal != valorAnterior)
+            mudancas.Add($"valor de {NotificacaoService.Moeda(valorAnterior)} para {NotificacaoService.Moeda(compromisso.ValorTotal)}");
+        if (compromisso.Data.Date != dataAnterior.Date)
+            mudancas.Add($"vencimento de {dataAnterior:dd/MM} para {compromisso.Data:dd/MM}");
+
+        var ator = await _notificacaoService.NomeDoAtor();
+        var detalhe = mudancas.Count > 0 ? string.Join("; ", mudancas) : "foi alterado";
+
+        await _notificacaoService.Notificar(
+            participacoes.Where(p => p.Integrante != null).Select(p => p.Integrante!.UsuarioId),
+            TipoNotificacao.AlteracaoCompromisso, nameof(Domain.Entities.CompromissoFinanceiro), compromisso.CompromissoFinanceiroId,
+            $"{ator} alterou {tituloAnterior}: {detalhe}.");
+    }
+
     //TODO refatorar funções de calculos, no momento só aceita DTOs de Create
     #region CALCULOS DE VALORES
     
