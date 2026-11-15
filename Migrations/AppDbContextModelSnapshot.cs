@@ -733,6 +733,15 @@ namespace TribeWallet.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("nome");
 
+                    b.Property<DateTime?>("ResetSenhaExpiracao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reset_senha_expiracao");
+
+                    b.Property<string>("ResetSenhaTokenHash")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("reset_senha_token_hash");
+
                     b.Property<string>("Sobrenome")
                         .IsRequired()
                         .HasMaxLength(100)

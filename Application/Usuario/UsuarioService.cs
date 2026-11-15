@@ -3,6 +3,8 @@ using TribeWallet.Application.Arquivo;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.IntegranteCompromisso;
 using TribeWallet.Application.IntegranteCompromisso.DTOs;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace TribeWallet.Application.Usuario;
 using Services;
@@ -12,20 +14,23 @@ public class UsuarioService
 {
     /// <summary>Custo do BCrypt. Cada incremento dobra o tempo de verificação.</summary>
     private const int FatorBCrypt = 12;
+    private static readonly TimeSpan ValidadeCodigoReset = TimeSpan.FromMinutes(15);
     
     private readonly IUsuarioRepository _repository;
     private readonly IGrupoRepository _grupoRepository;
     private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository;
     private readonly JwtTokenService _jwtTokenService;
     private readonly ArquivoLocalService _arquivoLocalService;
+    private readonly IEmailService _emailService;
     
-    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService, IIntegranteCompromissoRepository integranteCompromissoRepository, IGrupoRepository grupoRepository)
+    public UsuarioService(IUsuarioRepository repository, JwtTokenService jwtTokenService, ArquivoLocalService arquivoLocalService, IIntegranteCompromissoRepository integranteCompromissoRepository, IGrupoRepository grupoRepository, IEmailService emailService)
     {
         _repository = repository;
         _jwtTokenService = jwtTokenService;
         _arquivoLocalService = arquivoLocalService;
         _integranteCompromissoRepository = integranteCompromissoRepository;
         _grupoRepository = grupoRepository;
+        _emailService = emailService;
     }
     
     /*public async Task<IEnumerable<UsuarioResponseDTO>> GetAll(bool deleted = false)
@@ -52,6 +57,8 @@ public class UsuarioService
 
 public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuarioRequestDto)
     {
+        ValidarPoliticaSenha(createUsuarioRequestDto.Senha);
+
         var usuario = new Usuario
         {
             Nome = createUsuarioRequestDto.Nome,
@@ -78,27 +85,98 @@ public async Task<UsuarioResponseDTO> Create(CreateUsuarioRequestDTO createUsuar
         return loginResponseDto;
     }
 
-public async Task RedefinirSenha(EsqueceuSenhaRequestDTO dto)
+public async Task SolicitarRecuperacaoSenha(EsqueceuSenhaRequestDTO dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.NovaSenha))
-            throw new ArgumentException("E-mail e nova senha são obrigatórios.");
+        if (string.IsNullOrWhiteSpace(dto.Email))
+            throw new ArgumentException("O e-mail é obrigatório.");
 
         var usuario = await _repository.GetByEmail(dto.Email);
+        
+        // Prevenção contra enumeração de usuários: se o e-mail não existir, encerramos silenciosamente
         if (usuario == null)
-            throw new Exception("Usuário não encontrado com o e-mail informado.");
+            return;
+
+        // Gera código numérico criptograficamente seguro de 6 dígitos (ex: 482910)
+        var codigo = RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+
+        usuario.ResetSenhaTokenHash = HashSenha(codigo);
+        usuario.ResetSenhaExpiracao = DateTime.UtcNow.Add(ValidadeCodigoReset);
+
+        await _repository.Update(usuario);
+
+        var corpoHtml = $"<p>Seu código de recuperação é: <b>" + codigo + "</b></p>";
+
+        await _emailService.EnviarAsync(
+            usuario.Email,
+            "Código de Recuperação de Senha - TribeWallet",
+            corpoHtml);
+    }
+
+    public async Task RedefinirSenha(ResetSenhaRequestDTO dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Codigo) ||
+            string.IsNullOrWhiteSpace(dto.NovaSenha))
+        {
+            throw new ArgumentException("E-mail, código de verificação e nova senha são obrigatórios.");
+        }
+
+        ValidarPoliticaSenha(dto.NovaSenha);
+
+        var usuario = await _repository.GetByEmail(dto.Email);
+        if (usuario == null ||
+            string.IsNullOrEmpty(usuario.ResetSenhaTokenHash) ||
+            usuario.ResetSenhaExpiracao == null ||
+            usuario.ResetSenhaExpiracao < DateTime.UtcNow)
+        {
+            throw new ArgumentException("Código de verificação inválido ou expirado.");
+        }
+
+        var codigoValido = BCrypt.Net.BCrypt.Verify(dto.Codigo.Trim(), usuario.ResetSenhaTokenHash);
+        if (!codigoValido)
+            throw new ArgumentException("Código de verificação inválido ou expirado.");
 
         usuario.HashSenha = HashSenha(dto.NovaSenha);
+        usuario.ResetSenhaTokenHash = null;
+        usuario.ResetSenhaExpiracao = null;
+
         await _repository.Update(usuario);
     }
 
-    public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
+    private static void ValidarPoliticaSenha(string senha)
+    {
+        if (string.IsNullOrWhiteSpace(senha) || senha.Length < 8)
+            throw new ArgumentException("A senha deve ter pelo menos 8 caracteres.");
+
+        if (senha.Length > 72)
+            throw new ArgumentException("A senha deve ter no máximo 72 caracteres.");
+
+        if (!Regex.IsMatch(senha, "[A-Z]"))
+            throw new ArgumentException("A senha deve conter pelo menos uma letra maiúscula.");
+
+        if (!Regex.IsMatch(senha, "[a-z]"))
+            throw new ArgumentException("A senha deve conter pelo menos uma letra minúscula.");
+
+        if (!Regex.IsMatch(senha, "[0-9]"))
+            throw new ArgumentException("A senha deve conter pelo menos um número.");
+
+        if (!Regex.IsMatch(senha, @"[^a-zA-Z0-9\s]"))
+            throw new ArgumentException("A senha deve conter pelo menos um caractere especial (ex: !@#$%&*).");
+    }
+
+public async Task<UsuarioResponseDTO> Update(UpdateUsuarioRequestDTO updateUsuarioRequestDto, string usuarioToken)
     {
         var usuario = await GetByToken(usuarioToken);
         
+        if (updateUsuarioRequestDto.Senha != null)
+        {
+            ValidarPoliticaSenha(updateUsuarioRequestDto.Senha);
+            usuario.HashSenha = HashSenha(updateUsuarioRequestDto.Senha);
+        }
+
         usuario.Nome = updateUsuarioRequestDto.Nome ?? usuario.Nome;
         usuario.Sobrenome = updateUsuarioRequestDto.Sobrenome ?? usuario.Sobrenome;
         usuario.Username = updateUsuarioRequestDto.Username ?? usuario.Username;
-        usuario.HashSenha = updateUsuarioRequestDto.Senha == null ?  usuario.HashSenha : HashSenha(updateUsuarioRequestDto.Senha);
 
         if (updateUsuarioRequestDto.Imagem != null)
         {
