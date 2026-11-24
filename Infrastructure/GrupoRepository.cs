@@ -71,6 +71,15 @@ public class GrupoRepository : IGrupoRepository
         {
             grupo.DeletedAt = DateTime.UtcNow;
             _dbContext.Grupos.Update(grupo);
+
+            foreach (var compromisso in grupo.Compromissos)
+            {
+                if (compromisso.DeletedAt is null)
+                {
+                    compromisso.DeletedAt = DateTime.UtcNow;
+                    _dbContext.CompromissosFinanceiros.Update(compromisso);
+                }
+            }
             await _dbContext.SaveChangesAsync();
         }
 
