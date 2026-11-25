@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TribeWallet.Application;
 using TribeWallet.Application.Usuario;
-using TribeWallet.Services;
 
 namespace TribeWallet.Presentation;
 
@@ -22,13 +21,11 @@ public class AuthController : ControllerBase
         {
             var usuario = await _usuarioService.Login(loginRequest);
             return Ok(usuario);
-
         }
         catch (UnauthorizedAccessException e)
         {
             return Unauthorized(e.Message);
         }
-
     }
 
     [HttpPost("register")]
@@ -41,7 +38,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return BadRequest(new { mensagem = e.Message });
         }
     }
 
@@ -50,12 +47,26 @@ public class AuthController : ControllerBase
     {
         try
         {
+            await _usuarioService.SolicitarRecuperacaoSenha(requestDto);
+            return Ok(new { mensagem = "Se o e-mail informado estiver cadastrado, um código de recuperação foi enviado." });
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new { mensagem = e.Message });
+        }
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetSenhaRequestDTO requestDto)
+    {
+        try
+        {
             await _usuarioService.RedefinirSenha(requestDto);
             return Ok(new { mensagem = "Senha redefinida com sucesso." });
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return BadRequest(new { mensagem = e.Message });
         }
     }
 }
