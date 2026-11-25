@@ -189,7 +189,13 @@ public class CompromissoFinanceiroService
                 .Any(p => p.Integrante != null && p.Integrante.Token == requestDto.IntegranteToken);
 
             if (jaParticipa)
+            {
+                var participacao = compromisso.Participacoes.FirstOrDefault(p =>
+                        p.Integrante != null && p.Integrante.Token == requestDto.IntegranteToken);
+                if (participacao is { DeletedAt: not null })
+                    participacao.DeletedAt = null;
                 continue;
+            }
 
             var integrante = await _integranteRepository.GetByToken(requestDto.IntegranteToken);
 
