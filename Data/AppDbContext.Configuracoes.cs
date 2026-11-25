@@ -21,6 +21,8 @@ public partial class AppDbContext
             e.Property(u => u.Username).HasMaxLength(50).IsRequired();
             e.Property(u => u.Imagem).HasMaxLength(2048);
             e.Property(u => u.HashSenha).HasMaxLength(255).IsRequired();
+            e.Property(u => u.ResetSenhaTokenHash).HasMaxLength(255);
+            e.Property(u => u.ResetSenhaExpiracao).HasColumnType("timestamp with time zone");
             e.HasIndex(u => u.Email).IsUnique();
             e.HasIndex(u => u.Username).IsUnique();
         });

@@ -12,10 +12,13 @@ public class Usuario : EntidadeBase
 
     public string Username { get; set; } = string.Empty;
 
-    /// <summary>URL da foto de perfil no servidor externo de arquivos.</summary>
     public string? Imagem { get; set; }
 
     public string HashSenha { get; set; } = string.Empty;
+
+    public string? ResetSenhaTokenHash { get; set; }
+
+    public DateTime? ResetSenhaExpiracao { get; set; }
 
     public ICollection<Integrante> Integrantes { get; set; } = [];
 
