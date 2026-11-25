@@ -2,6 +2,7 @@ using TribeWallet.Application.Pagamento.DTOs;
 using TribeWallet.Application.IntegranteCompromisso; 
 using TribeWallet.Application.IntegranteCompromisso.DTOs; 
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.Notificacoes;
 using TribeWallet.Application.Compromisso.DTOs;
 using TribeWallet.Application;
 using TribeWallet.Application.Arquivo; // Namespace do UsuarioResponseDTO[cite: 14]
@@ -15,12 +16,14 @@ public class PagamentoService
     private readonly IPagamentoRepository _pagamentoRepository;
     private readonly IIntegranteCompromissoRepository _integranteCompromissoRepository;
     private readonly ArquivoLocalService _arquivoLocalService;
+    private readonly NotificacaoService _notificacaoService;
 
-    public PagamentoService(IPagamentoRepository pagamentoRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, ArquivoLocalService arquivoLocalService)
+    public PagamentoService(IPagamentoRepository pagamentoRepository, IIntegranteCompromissoRepository integranteCompromissoRepository, ArquivoLocalService arquivoLocalService, NotificacaoService notificacaoService)
     {
         _pagamentoRepository = pagamentoRepository;
         _integranteCompromissoRepository = integranteCompromissoRepository;
         _arquivoLocalService = arquivoLocalService;
+        _notificacaoService = notificacaoService;
     }
 
     public async Task<PagamentoResponseDTO> RegistrarPagamento(CreatePagamentoRequestDTO dto)
@@ -31,6 +34,11 @@ public class PagamentoService
         var integranteCompromisso = await _integranteCompromissoRepository.GetByToken(dto.IntegranteCompromissoToken);
         if (integranteCompromisso == null)
             throw new ArgumentException("Fatia de compromisso não encontrada.");
+
+        // Estado antes do pagamento, para avisar da quitação só na hora em que ela acontece.
+        var participacoes = await _integranteCompromissoRepository
+            .GetAllByCompromissoToken(integranteCompromisso.Compromisso!.Token);
+        var quitadoAntes = TodosQuitados(participacoes);
 
         var comprovante = await _arquivoLocalService.SalvarArquivoLocalAsync(dto.Comprovante);
         var pagamento = new Domain.Entities.Pagamento
@@ -46,6 +54,7 @@ public class PagamentoService
         var novoPagamento = await _pagamentoRepository.Add(pagamento);
 
         await SincronizarValorPago(integranteCompromisso);
+        await NotificarPagamento(novoPagamento, integranteCompromisso, participacoes, quitadoAntes);
         // Ao salvar, o EF pode não retornar a árvore completa de dependências na mesma instância.
         // Recarregar pelo Token garante que o repositório aplique os .Include() definidos e 
         // o MapToResponseDTO tenha todos os dados necessários.
@@ -107,6 +116,27 @@ public class PagamentoService
 
         if (pagamento.IntegranteCompromisso != null)
             await SincronizarValorPago(pagamento.IntegranteCompromisso);
+    }
+
+    private static bool TodosQuitados(ICollection<Domain.Entities.IntegranteCompromisso> participacoes) =>
+        participacoes.Count > 0 && participacoes.All(p => p.ValorPago >= p.ValorDevedor);
+
+    private async Task NotificarPagamento(Domain.Entities.Pagamento pagamento,
+        Domain.Entities.IntegranteCompromisso fatia,
+        ICollection<Domain.Entities.IntegranteCompromisso> participacoes, bool quitadoAntes)
+    {
+        var compromisso = fatia.Compromisso!;
+        var usuarios = participacoes.Where(p => p.Integrante != null).Select(p => p.Integrante!.UsuarioId).ToList();
+        var pagador = fatia.Integrante?.Usuario?.Nome ?? "Alguém";
+
+        await _notificacaoService.Notificar(usuarios, TipoNotificacao.PagamentoRegistrado,
+            nameof(Domain.Entities.Pagamento), pagamento.PagamentoId,
+            $"{pagador} registrou o pagamento de {NotificacaoService.Moeda(pagamento.Valor)} em {compromisso.Titulo}.");
+
+        if (!quitadoAntes && TodosQuitados(participacoes))
+            await _notificacaoService.Notificar(usuarios, TipoNotificacao.CompromissoQuitado,
+                nameof(Domain.Entities.CompromissoFinanceiro), compromisso.CompromissoFinanceiroId,
+                $"{compromisso.Titulo} foi totalmente quitado.", doSistema: true);
     }
 
     /// <summary>

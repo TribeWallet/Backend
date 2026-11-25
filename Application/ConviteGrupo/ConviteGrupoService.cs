@@ -1,6 +1,7 @@
 using System.Net;
 using TribeWallet.Application.ConviteGrupo.DTOs;
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.Notificacoes;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Domain.Entities;
 using TribeWallet.Services;
@@ -17,18 +18,20 @@ public class ConviteGrupoService
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IIntegranteRepository _integranteRepository;
     private readonly IEmailService _emailService;
+    private readonly NotificacaoService _notificacaoService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ConviteGrupoService> _logger;
 
     public ConviteGrupoService(IConviteGrupoRepository conviteRepository, Grupo.IGrupoRepository grupoRepository,
         IUsuarioRepository usuarioRepository, IIntegranteRepository integranteRepository,
-        IEmailService emailService, IConfiguration configuration, ILogger<ConviteGrupoService> logger)
+        IEmailService emailService, NotificacaoService notificacaoService, IConfiguration configuration, ILogger<ConviteGrupoService> logger)
     {
         _conviteRepository = conviteRepository;
         _grupoRepository = grupoRepository;
         _usuarioRepository = usuarioRepository;
         _integranteRepository = integranteRepository;
         _emailService = emailService;
+        _notificacaoService = notificacaoService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -60,6 +63,13 @@ public class ConviteGrupoService
         var emailEnviado = false;
         if (email != null)
         {
+            // Se o e-mail já é de um usuário, o convite aparece também no sininho dele.
+            var convidado = await _usuarioRepository.GetByEmail(email);
+            if (convidado != null)
+                await _notificacaoService.Notificar([convidado.UsuarioId], TipoNotificacao.ConviteGrupo,
+                    nameof(Domain.Entities.Grupo), grupo.GrupoId,
+                    $"{integrante.Usuario!.Nome} convidou você para o grupo {grupo.Nome}.");
+
             try
             {
                 var quem = WebUtility.HtmlEncode($"{integrante.Usuario!.Nome} {integrante.Usuario.Sobrenome}");
@@ -115,6 +125,7 @@ public class ConviteGrupoService
             throw new UnauthorizedAccessException("Este convite foi enviado para outro e-mail.");
 
         var existente = await _conviteRepository.GetIntegrante(convite.GrupoId, usuario.UsuarioId);
+        var entrouAgora = false;
         if (existente is null)
         {
             await _integranteRepository.Create(new Domain.Entities.Integrante
@@ -122,12 +133,20 @@ public class ConviteGrupoService
                 UsuarioId = usuario.UsuarioId,
                 GrupoId = convite.GrupoId
             });
+            entrouAgora = true;
         }
         else if (existente.DeletedAt != null)
         {
             // Quem saiu do grupo e volta por um convite reativa o vínculo antigo (índice único usuário+grupo).
             await _conviteRepository.RestaurarIntegrante(existente);
+            entrouAgora = true;
         }
+
+        // Só avisa quem convidou quando a pessoa realmente entrou; repetir a chamada não gera outro aviso.
+        if (entrouAgora)
+            await _notificacaoService.Notificar([convite.CriadoPorUsuarioId], TipoNotificacao.ConviteGrupo,
+                nameof(Domain.Entities.Grupo), convite.GrupoId,
+                $"{usuario.Nome} entrou no grupo {convite.Grupo!.Nome}.");
 
         return convite.Grupo!.Token;
     }

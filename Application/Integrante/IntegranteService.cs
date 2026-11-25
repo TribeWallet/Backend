@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using TribeWallet.Application;
 using TribeWallet.Application.Grupo;
 using TribeWallet.Application.Integrante;
+using TribeWallet.Application.Notificacoes;
 using TribeWallet.Application.Usuario;
 using TribeWallet.Domain.Entities;
 using TribeWallet.Services;
@@ -14,13 +15,15 @@ public class IntegranteService
     private readonly UsuarioService _usuarioService;
     private readonly IGrupoRepository _grupoRepository;
     private readonly GrupoIntegranteCommonService _grupoIntegranteCommonService;
+    private readonly NotificacaoService _notificacaoService;
 
-    public IntegranteService(IIntegranteRepository integranteRepository, UsuarioService usuarioService, IGrupoRepository grupoRepository, GrupoIntegranteCommonService grupoIntegranteCommonService)
+    public IntegranteService(IIntegranteRepository integranteRepository, UsuarioService usuarioService, IGrupoRepository grupoRepository, GrupoIntegranteCommonService grupoIntegranteCommonService, NotificacaoService notificacaoService)
     {
         _integranteRepository = integranteRepository;
         _usuarioService = usuarioService;
         _grupoRepository = grupoRepository;
         _grupoIntegranteCommonService = grupoIntegranteCommonService;
+        _notificacaoService = notificacaoService;
     }
 
     public async Task<IntegranteResponseDTO> GetByToken(string integranteToken)
@@ -34,6 +37,7 @@ public class IntegranteService
         string grupoToken)
     {
         var responseDtoList = new List<IntegranteResponseDTO>();
+        var ator = await _notificacaoService.NomeDoAtor();
         
         //busca o grupo a quem esses integrantes serão adicionados
         var grupo = await  _grupoRepository.GetByToken(grupoToken);
@@ -52,6 +56,9 @@ public class IntegranteService
             };
 
             await _integranteRepository.Create(newIntegrante);
+
+            await _notificacaoService.Notificar([usuario.UsuarioId], TipoNotificacao.ConviteGrupo,
+                nameof(Grupo), grupo.GrupoId, $"{ator} adicionou você ao grupo {grupo.Nome}.");
             
             //converte integrante e usuario em responseDTOs aninhados
             var responseDto = _grupoIntegranteCommonService.ConvertIntegranteToResponseDto(newIntegrante);
