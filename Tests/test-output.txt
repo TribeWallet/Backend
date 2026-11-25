@@ -1,0 +1,655 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  TribeWallet -> /home/lfscruz/Documents/csharp/TribeWallet/bin/Debug/net8.0/TribeWallet.dll
+  TribeWallet.Tests -> /home/lfscruz/Documents/csharp/TribeWallet/Tests/bin/Debug/net8.0/TribeWallet.Tests.dll
+Test run for /home/lfscruz/Documents/csharp/TribeWallet/Tests/bin/Debug/net8.0/TribeWallet.Tests.dll (.NETCoreApp,Version=v8.0)
+Microsoft (R) Test Execution Command Line Tool Version 17.8.0 (x64)
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 8.0.31)
+[xUnit.net 00:00:00.07]   Discovering: TribeWallet.Tests
+[xUnit.net 00:00:00.11]   Discovered:  TribeWallet.Tests
+[xUnit.net 00:00:00.15]   Starting:    TribeWallet.Tests
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (32ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1 FROM pg_catalog.pg_class c
+          JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+          WHERE n.nspname='public' AND
+                c.relname='__EFMigrationsHistory'
+      )
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT migration_id, product_version
+      FROM "__EFMigrationsHistory"
+      ORDER BY migration_id;
+info: Banco[0]
+      Nenhuma migration pendente.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM usuarios AS u)
+info: Banco[0]
+      Seed ignorado: o banco já contém usuários.
+Uploads folder: /home/lfscruz/Documents/csharp/TribeWallet/Tests/bin/Debug/net8.0/Uploads
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://0.0.0.0:5049
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (10ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?', @p9='?' (DbType = DateTime), @p10='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO usuarios (usuario_id, created_at, deleted_at, email, hash_senha, imagem, nome, sobrenome, token, updated_at, username)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?', @p4='?', @p5='?', @p6='?', @p7='?', @p8='?', @p9='?' (DbType = DateTime), @p10='?'], CommandType='Text', CommandTimeout='30']
+      INSERT INTO usuarios (usuario_id, created_at, deleted_at, email, hash_senha, imagem, nome, sobrenome, token, updated_at, username)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__loginRequestDto_Email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.email = @__loginRequestDto_Email_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__ToLower_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE lower(u.email) = @__ToLower_0 AND u.deleted_at IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p9='?' (DbType = Guid), @p0='?' (DbType = DateTime), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = DateTime), @p8='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE usuarios SET deleted_at = @p0, email = @p1, hash_senha = @p2, imagem = @p3, nome = @p4, sobrenome = @p5, token = @p6, updated_at = @p7, username = @p8
+      WHERE usuario_id = @p9;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.deleted_at IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__termo_0_contains='?', @__termo_0_contains_1='?', @__termo_0_contains_2='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.deleted_at IS NULL AND (lower(u.nome || ' ' || u.sobrenome) LIKE @__termo_0_contains OR lower(u.nome) LIKE @__termo_0_contains_1 OR lower(u.sobrenome) LIKE @__termo_0_contains_1 OR lower(u.username) LIKE @__termo_0_contains_2)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p9='?' (DbType = Guid), @p0='?' (DbType = DateTime), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = DateTime), @p8='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE usuarios SET deleted_at = @p0, email = @p1, hash_senha = @p2, imagem = @p3, nome = @p4, sobrenome = @p5, token = @p6, updated_at = @p7, username = @p8
+      WHERE usuario_id = @p9;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?', @p4='?', @p5='?', @p6='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO grupos (grupo_id, created_at, deleted_at, descricao, nome, token, updated_at)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = DateTime), @p6='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO integrantes (integrante_id, created_at, deleted_at, grupo_id, token, updated_at, usuario_id)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = DateTime), @p6='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO integrantes (integrante_id, created_at, deleted_at, grupo_id, token, updated_at, usuario_id)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_id, t.created_at, t.deleted_at, t.grupo_id, t.token, t.updated_at, t.usuario_id, t.usuario_id0, t.created_at0, t.deleted_at0, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token0, t.updated_at0, t.username, t0.compromisso_financeiro_id, t0.categoria, t0.created_at, t0.data, t0.deleted_at, t0.grupo_id, t0.imagem, t0.tipo_divisao, t0.titulo, t0.token, t0.updated_at, t0.valor_total, t0.integrante_compromisso_id, t0.compromisso_id, t0.created_at0, t0.deleted_at0, t0.integrante_id, t0.token0, t0.updated_at0, t0.valor_devedor, t0.valor_pago, t0.integrante_id0, t0.created_at00, t0.deleted_at00, t0.grupo_id0, t0.token00, t0.updated_at00, t0.usuario_id, t0.usuario_id0, t0.created_at1, t0.deleted_at1, t0.email, t0.hash_senha, t0.imagem0, t0.nome, t0.sobrenome, t0.token1, t0.updated_at1, t0.username, t0.pagamento_id, t0.comprovante_url, t0.created_at2, t0.data0, t0.deleted_at2, t0.integrante_compromisso_id0, t0.metodo, t0.token2, t0.updated_at2, t0.valor
+      FROM grupos AS g
+      LEFT JOIN (
+          SELECT i0.integrante_id, i0.created_at, i0.deleted_at, i0.grupo_id, i0.token, i0.updated_at, i0.usuario_id, u0.usuario_id AS usuario_id0, u0.created_at AS created_at0, u0.deleted_at AS deleted_at0, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token0, u0.updated_at AS updated_at0, u0.username
+          FROM integrantes AS i0
+          INNER JOIN usuarios AS u0 ON i0.usuario_id = u0.usuario_id
+          WHERE i0.deleted_at IS NULL
+      ) AS t ON g.grupo_id = t.grupo_id
+      LEFT JOIN (
+          SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, t1.integrante_compromisso_id, t1.compromisso_id, t1.created_at AS created_at0, t1.deleted_at AS deleted_at0, t1.integrante_id, t1.token AS token0, t1.updated_at AS updated_at0, t1.valor_devedor, t1.valor_pago, t1.integrante_id0, t1.created_at0 AS created_at00, t1.deleted_at0 AS deleted_at00, t1.grupo_id AS grupo_id0, t1.token0 AS token00, t1.updated_at0 AS updated_at00, t1.usuario_id, t1.usuario_id0, t1.created_at1, t1.deleted_at1, t1.email, t1.hash_senha, t1.imagem AS imagem0, t1.nome, t1.sobrenome, t1.token1, t1.updated_at1, t1.username, t1.pagamento_id, t1.comprovante_url, t1.created_at2, t1.data AS data0, t1.deleted_at2, t1.integrante_compromisso_id0, t1.metodo, t1.token2, t1.updated_at2, t1.valor
+          FROM compromissos_financeiros AS c
+          LEFT JOIN (
+              SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, i2.created_at AS created_at0, i2.deleted_at AS deleted_at0, i2.grupo_id, i2.token AS token0, i2.updated_at AS updated_at0, i2.usuario_id, u1.usuario_id AS usuario_id0, u1.created_at AS created_at1, u1.deleted_at AS deleted_at1, u1.email, u1.hash_senha, u1.imagem, u1.nome, u1.sobrenome, u1.token AS token1, u1.updated_at AS updated_at1, u1.username, p.pagamento_id, p.comprovante_url, p.created_at AS created_at2, p.data, p.deleted_at AS deleted_at2, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token2, p.updated_at AS updated_at2, p.valor
+              FROM integrantes_compromissos AS i1
+              INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+              INNER JOIN usuarios AS u1 ON i2.usuario_id = u1.usuario_id
+              LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+              WHERE i1.deleted_at IS NULL
+          ) AS t1 ON c.compromisso_financeiro_id = t1.compromisso_id
+          WHERE c.deleted_at IS NULL
+      ) AS t0 ON g.grupo_id = t0.grupo_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes AS i
+          INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+          WHERE g.grupo_id = i.grupo_id AND u.token = @__usuarioToken_0) AND g.deleted_at IS NULL
+      ORDER BY g.grupo_id, t.integrante_id, t.usuario_id0, t0.compromisso_financeiro_id, t0.integrante_compromisso_id, t0.integrante_id0, t0.usuario_id0
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE g.token = @__token_0 AND i.deleted_at IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p5='?' (DbType = Guid), @p0='?' (DbType = DateTime), @p1='?', @p2='?', @p3='?', @p4='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE grupos SET deleted_at = @p0, descricao = @p1, nome = @p2, token = @p3, updated_at = @p4
+      WHERE grupo_id = @p5;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE g.token = @__token_0 AND i.deleted_at IS NULL
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T01_Post_AuthRegister [1 s]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T02_Post_AuthLogin [300 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T03_Post_AuthForgotPassword [304 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T04_Get_Usuarios [22 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T05_Get_UsuarioByNome [16 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T06_Put_Usuario [23 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T07_Post_Grupos [85 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T08_Get_GruposByUsuario [87 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T09_Get_GrupoByToken [30 ms]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (3ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = DateTime), @p6='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO integrantes (integrante_id, created_at, deleted_at, grupo_id, token, updated_at, usuario_id)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6);
+fail: Microsoft.EntityFrameworkCore.Update[10000]
+      An exception occurred in the database while saving changes for context type 'TribeWallet.Data.AppDbContext'.
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_integrantes_usuario_id_grupo_id"
+      
+      DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_integrantes_usuario_id_grupo_id"
+          Detail: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+          SchemaName: public
+          TableName: integrantes
+          ConstraintName: ix_integrantes_usuario_id_grupo_id
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+      Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while saving the entity changes. See the inner exception for details.
+       ---> Npgsql.PostgresException (0x80004005): 23505: duplicate key value violates unique constraint "ix_integrantes_usuario_id_grupo_id"
+      
+      DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+        Exception data:
+          Severity: ERROR
+          SqlState: 23505
+          MessageText: duplicate key value violates unique constraint "ix_integrantes_usuario_id_grupo_id"
+          Detail: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.
+          SchemaName: public
+          TableName: integrantes
+          ConstraintName: ix_integrantes_usuario_id_grupo_id
+          File: nbtinsert.c
+          Line: 666
+          Routine: _bt_check_unique
+         --- End of inner exception stack trace ---
+         at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.ExecuteAsync(IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.ExecuteAsync(IEnumerable`1 commandBatches, IRelationalConnection connection, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__grupoId_0='?' (DbType = Guid), @__usuarioId_1='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+      FROM integrantes AS i
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      WHERE i.grupo_id = @__grupoId_0 AND i.usuario_id = @__usuarioId_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?' (DbType = Guid), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = DateTime), @p6='?' (DbType = Guid), @p7='?', @p8='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO convites_grupo (convite_grupo_id, created_at, criado_por_usuario_id, deleted_at, email_convidado, expira_em, grupo_id, token, updated_at)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8);
+warn: TribeWallet.Application.ConviteGrupo.ConviteGrupoService[0]
+      Não foi possível enviar o e-mail de convite.
+      System.Net.Mail.SmtpException: Failure sending mail.
+       ---> System.Net.Sockets.SocketException (111): Connection refused
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+         at System.Threading.Tasks.ValueTask.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+      --- End of stack trace from previous location ---
+         at System.Threading.Tasks.TaskToAsyncResult.End(IAsyncResult asyncResult)
+         at System.Net.Sockets.TcpClient.EndConnect(IAsyncResult asyncResult)
+         at System.Net.Mail.SmtpConnection.ConnectAndHandshakeAsyncResult.InitializeConnectionCallback(IAsyncResult result)
+      --- End of stack trace from previous location ---
+         at System.Net.Mail.SmtpClient.ConnectCallback(IAsyncResult result)
+         --- End of inner exception stack trace ---
+         at TribeWallet.Services.SmtpEmailService.EnviarAsync(String para, String assunto, String corpoHtml) in /home/lfscruz/Documents/csharp/TribeWallet/Services/SmtpEmailService.cs:line 34
+         at TribeWallet.Application.ConviteGrupo.ConviteGrupoService.Criar(String grupoToken, Guid usuarioId, CreateConviteGrupoRequestDTO dto) in /home/lfscruz/Documents/csharp/TribeWallet/Application/ConviteGrupo/ConviteGrupoService.cs:line 67
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.convite_grupo_id, c.created_at, c.criado_por_usuario_id, c.deleted_at, c.email_convidado, c.expira_em, c.grupo_id, c.token, c.updated_at, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM convites_grupo AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON c.criado_por_usuario_id = u.usuario_id
+      WHERE c.token = @__token_0 AND c.deleted_at IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.convite_grupo_id, c.created_at, c.criado_por_usuario_id, c.deleted_at, c.email_convidado, c.expira_em, c.grupo_id, c.token, c.updated_at, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM convites_grupo AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON c.criado_por_usuario_id = u.usuario_id
+      WHERE c.token = @__token_0 AND c.deleted_at IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__usuarioId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.usuario_id = @__usuarioId_0 AND u.deleted_at IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?' (DbType = DateTime), @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Guid), @p6='?', @p7='?' (DbType = Int32), @p8='?', @p9='?', @p10='?' (DbType = DateTime), @p11='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO compromissos_financeiros (compromisso_financeiro_id, categoria, created_at, data, deleted_at, grupo_id, imagem, tipo_divisao, titulo, token, updated_at, valor_total)
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE g.token = @__token_0 AND i.deleted_at IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__grupoToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.created_at0, t.deleted_at0, t.grupo_id, t.token0, t.updated_at0, t.usuario_id, t.usuario_id0, t.created_at1, t.deleted_at1, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token1, t.updated_at1, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i.integrante_compromisso_id, i.compromisso_id, i.created_at, i.deleted_at, i.integrante_id, i.token, i.updated_at, i.valor_devedor, i.valor_pago, i0.integrante_id AS integrante_id0, i0.created_at AS created_at0, i0.deleted_at AS deleted_at0, i0.grupo_id, i0.token AS token0, i0.updated_at AS updated_at0, i0.usuario_id, u.usuario_id AS usuario_id0, u.created_at AS created_at1, u.deleted_at AS deleted_at1, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token AS token1, u.updated_at AS updated_at1, u.username
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE i.deleted_at IS NULL
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE g.token = @__grupoToken_0 AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE g.token = @__token_0 AND i.deleted_at IS NULL
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.usuario_id, t.pagamento_id, t.comprovante_url, t.created_at0, t.data, t.deleted_at0, t.integrante_compromisso_id0, t.metodo, t.token0, t.updated_at0, t.valor, t.created_at1, t.deleted_at1, t.grupo_id, t.token1, t.updated_at1, t.usuario_id0, t.created_at2, t.deleted_at2, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token2, t.updated_at2, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, u0.usuario_id, p.pagamento_id, p.comprovante_url, p.created_at AS created_at0, p.data, p.deleted_at AS deleted_at0, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token0, p.updated_at AS updated_at0, p.valor, i2.created_at AS created_at1, i2.deleted_at AS deleted_at1, i2.grupo_id, i2.token AS token1, i2.updated_at AS updated_at1, i2.usuario_id AS usuario_id0, u0.created_at AS created_at2, u0.deleted_at AS deleted_at2, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token2, u0.updated_at AS updated_at2, u0.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u0 ON i2.usuario_id = u0.usuario_id
+          LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND u.token = @__usuarioToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0, t.usuario_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__integranteToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.created_at0, t.deleted_at0, t.grupo_id, t.token0, t.updated_at0, t.usuario_id, t.usuario_id0, t.created_at1, t.deleted_at1, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token1, t.updated_at1, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, i2.created_at AS created_at0, i2.deleted_at AS deleted_at0, i2.grupo_id, i2.token AS token0, i2.updated_at AS updated_at0, i2.usuario_id, u.usuario_id AS usuario_id0, u.created_at AS created_at1, u.deleted_at AS deleted_at1, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token AS token1, u.updated_at AS updated_at1, u.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u ON i2.usuario_id = u.usuario_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND i0.token = @__integranteToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T10_Put_Grupo [15 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T11_Put_GrupoIntegrantes [25 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T12_Post_GrupoConvites [70 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T13_Get_Convite [15 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T14_Post_AceitarConvite [12 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T15_Post_Compromissos [55 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T16_Get_CompromissosByGrupo [33 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T17_Get_CompromissosByUsuario [38 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T18_Get_CompromissosByIntegrante [20 ms]
+[xUnit.net 00:00:03.09]     TribeWallet.Tests.TribeWalletAllRoutesTests.T19_Post_CompromissoIntegrantes [FAIL]
+[xUnit.net 00:00:03.09]       POST /api/compromissos/{compromissoToken}/integrantes failed with 404 (NotFound). Body: 
+[xUnit.net 00:00:03.09]       Stack Trace:
+[xUnit.net 00:00:03.09]         /home/lfscruz/Documents/csharp/TribeWallet/Tests/TribeWalletAllRoutesTests.cs(480,0): at TribeWallet.Tests.TribeWalletAllRoutesTests.AssertSuccessAsync(HttpResponseMessage res, String routeLabel)
+[xUnit.net 00:00:03.09]         /home/lfscruz/Documents/csharp/TribeWallet/Tests/TribeWalletAllRoutesTests.cs(316,0): at TribeWallet.Tests.TribeWalletAllRoutesTests.T19_Post_CompromissoIntegrantes()
+[xUnit.net 00:00:03.09]         --- End of stack trace from previous location ---
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_id, t.created_at, t.deleted_at, t.grupo_id, t.token, t.updated_at, t.usuario_id, t.usuario_id0, t.created_at0, t.deleted_at0, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token0, t.updated_at0, t.username, t0.compromisso_financeiro_id, t0.categoria, t0.created_at, t0.data, t0.deleted_at, t0.grupo_id, t0.imagem, t0.tipo_divisao, t0.titulo, t0.token, t0.updated_at, t0.valor_total, t0.integrante_compromisso_id, t0.compromisso_id, t0.created_at0, t0.deleted_at0, t0.integrante_id, t0.token0, t0.updated_at0, t0.valor_devedor, t0.valor_pago, t0.integrante_id0, t0.created_at00, t0.deleted_at00, t0.grupo_id0, t0.token00, t0.updated_at00, t0.usuario_id, t0.usuario_id0, t0.created_at1, t0.deleted_at1, t0.email, t0.hash_senha, t0.imagem0, t0.nome, t0.sobrenome, t0.token1, t0.updated_at1, t0.username, t0.pagamento_id, t0.comprovante_url, t0.created_at2, t0.data0, t0.deleted_at2, t0.integrante_compromisso_id0, t0.metodo, t0.token2, t0.updated_at2, t0.valor
+      FROM grupos AS g
+      LEFT JOIN (
+          SELECT i0.integrante_id, i0.created_at, i0.deleted_at, i0.grupo_id, i0.token, i0.updated_at, i0.usuario_id, u0.usuario_id AS usuario_id0, u0.created_at AS created_at0, u0.deleted_at AS deleted_at0, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token0, u0.updated_at AS updated_at0, u0.username
+          FROM integrantes AS i0
+          INNER JOIN usuarios AS u0 ON i0.usuario_id = u0.usuario_id
+          WHERE i0.deleted_at IS NULL
+      ) AS t ON g.grupo_id = t.grupo_id
+      LEFT JOIN (
+          SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, t1.integrante_compromisso_id, t1.compromisso_id, t1.created_at AS created_at0, t1.deleted_at AS deleted_at0, t1.integrante_id, t1.token AS token0, t1.updated_at AS updated_at0, t1.valor_devedor, t1.valor_pago, t1.integrante_id0, t1.created_at0 AS created_at00, t1.deleted_at0 AS deleted_at00, t1.grupo_id AS grupo_id0, t1.token0 AS token00, t1.updated_at0 AS updated_at00, t1.usuario_id, t1.usuario_id0, t1.created_at1, t1.deleted_at1, t1.email, t1.hash_senha, t1.imagem AS imagem0, t1.nome, t1.sobrenome, t1.token1, t1.updated_at1, t1.username, t1.pagamento_id, t1.comprovante_url, t1.created_at2, t1.data AS data0, t1.deleted_at2, t1.integrante_compromisso_id0, t1.metodo, t1.token2, t1.updated_at2, t1.valor
+          FROM compromissos_financeiros AS c
+          LEFT JOIN (
+              SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, i2.created_at AS created_at0, i2.deleted_at AS deleted_at0, i2.grupo_id, i2.token AS token0, i2.updated_at AS updated_at0, i2.usuario_id, u1.usuario_id AS usuario_id0, u1.created_at AS created_at1, u1.deleted_at AS deleted_at1, u1.email, u1.hash_senha, u1.imagem, u1.nome, u1.sobrenome, u1.token AS token1, u1.updated_at AS updated_at1, u1.username, p.pagamento_id, p.comprovante_url, p.created_at AS created_at2, p.data, p.deleted_at AS deleted_at2, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token2, p.updated_at AS updated_at2, p.valor
+              FROM integrantes_compromissos AS i1
+              INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+              INNER JOIN usuarios AS u1 ON i2.usuario_id = u1.usuario_id
+              LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+              WHERE i1.deleted_at IS NULL
+          ) AS t1 ON c.compromisso_financeiro_id = t1.compromisso_id
+          WHERE c.deleted_at IS NULL
+      ) AS t0 ON g.grupo_id = t0.grupo_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes AS i
+          INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+          WHERE g.grupo_id = i.grupo_id AND u.token = @__usuarioToken_0) AND g.deleted_at IS NULL
+      ORDER BY g.grupo_id, t.integrante_id, t.usuario_id0, t0.compromisso_financeiro_id, t0.integrante_compromisso_id, t0.integrante_id0, t0.usuario_id0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.usuario_id, t.pagamento_id, t.comprovante_url, t.created_at0, t.data, t.deleted_at0, t.integrante_compromisso_id0, t.metodo, t.token0, t.updated_at0, t.valor, t.created_at1, t.deleted_at1, t.grupo_id, t.token1, t.updated_at1, t.usuario_id0, t.created_at2, t.deleted_at2, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token2, t.updated_at2, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, u0.usuario_id, p.pagamento_id, p.comprovante_url, p.created_at AS created_at0, p.data, p.deleted_at AS deleted_at0, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token0, p.updated_at AS updated_at0, p.valor, i2.created_at AS created_at1, i2.deleted_at AS deleted_at1, i2.grupo_id, i2.token AS token1, i2.updated_at AS updated_at1, i2.usuario_id AS usuario_id0, u0.created_at AS created_at2, u0.deleted_at AS deleted_at2, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token2, u0.updated_at AS updated_at2, u0.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u0 ON i2.usuario_id = u0.usuario_id
+          LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND u.token = @__usuarioToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0, t.usuario_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.usuario_id, t.pagamento_id, t.comprovante_url, t.created_at0, t.data, t.deleted_at0, t.integrante_compromisso_id0, t.metodo, t.token0, t.updated_at0, t.valor, t.created_at1, t.deleted_at1, t.grupo_id, t.token1, t.updated_at1, t.usuario_id0, t.created_at2, t.deleted_at2, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token2, t.updated_at2, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, u0.usuario_id, p.pagamento_id, p.comprovante_url, p.created_at AS created_at0, p.data, p.deleted_at AS deleted_at0, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token0, p.updated_at AS updated_at0, p.valor, i2.created_at AS created_at1, i2.deleted_at AS deleted_at1, i2.grupo_id, i2.token AS token1, i2.updated_at AS updated_at1, i2.usuario_id AS usuario_id0, u0.created_at AS created_at2, u0.deleted_at AS deleted_at2, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token2, u0.updated_at AS updated_at2, u0.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u0 ON i2.usuario_id = u0.usuario_id
+          LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND u.token = @__usuarioToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0, t.usuario_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.usuario_id, t.pagamento_id, t.comprovante_url, t.created_at0, t.data, t.deleted_at0, t.integrante_compromisso_id0, t.metodo, t.token0, t.updated_at0, t.valor, t.created_at1, t.deleted_at1, t.grupo_id, t.token1, t.updated_at1, t.usuario_id0, t.created_at2, t.deleted_at2, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token2, t.updated_at2, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, u0.usuario_id, p.pagamento_id, p.comprovante_url, p.created_at AS created_at0, p.data, p.deleted_at AS deleted_at0, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token0, p.updated_at AS updated_at0, p.valor, i2.created_at AS created_at1, i2.deleted_at AS deleted_at1, i2.grupo_id, i2.token AS token1, i2.updated_at AS updated_at1, i2.usuario_id AS usuario_id0, u0.created_at AS created_at2, u0.deleted_at AS deleted_at2, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token2, u0.updated_at AS updated_at2, u0.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u0 ON i2.usuario_id = u0.usuario_id
+          LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND u.token = @__usuarioToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0, t.usuario_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__usuarioToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, t.integrante_compromisso_id, t.compromisso_id, t.created_at, t.deleted_at, t.integrante_id, t.token, t.updated_at, t.valor_devedor, t.valor_pago, t.integrante_id0, t.usuario_id, t.pagamento_id, t.comprovante_url, t.created_at0, t.data, t.deleted_at0, t.integrante_compromisso_id0, t.metodo, t.token0, t.updated_at0, t.valor, t.created_at1, t.deleted_at1, t.grupo_id, t.token1, t.updated_at1, t.usuario_id0, t.created_at2, t.deleted_at2, t.email, t.hash_senha, t.imagem, t.nome, t.sobrenome, t.token2, t.updated_at2, t.username
+      FROM compromissos_financeiros AS c
+      INNER JOIN grupos AS g ON c.grupo_id = g.grupo_id
+      LEFT JOIN (
+          SELECT i1.integrante_compromisso_id, i1.compromisso_id, i1.created_at, i1.deleted_at, i1.integrante_id, i1.token, i1.updated_at, i1.valor_devedor, i1.valor_pago, i2.integrante_id AS integrante_id0, u0.usuario_id, p.pagamento_id, p.comprovante_url, p.created_at AS created_at0, p.data, p.deleted_at AS deleted_at0, p.integrante_compromisso_id AS integrante_compromisso_id0, p.metodo, p.token AS token0, p.updated_at AS updated_at0, p.valor, i2.created_at AS created_at1, i2.deleted_at AS deleted_at1, i2.grupo_id, i2.token AS token1, i2.updated_at AS updated_at1, i2.usuario_id AS usuario_id0, u0.created_at AS created_at2, u0.deleted_at AS deleted_at2, u0.email, u0.hash_senha, u0.imagem, u0.nome, u0.sobrenome, u0.token AS token2, u0.updated_at AS updated_at2, u0.username
+          FROM integrantes_compromissos AS i1
+          INNER JOIN integrantes AS i2 ON i1.integrante_id = i2.integrante_id
+          INNER JOIN usuarios AS u0 ON i2.usuario_id = u0.usuario_id
+          LEFT JOIN pagamentos AS p ON i1.integrante_compromisso_id = p.integrante_compromisso_id
+      ) AS t ON c.compromisso_financeiro_id = t.compromisso_id
+      WHERE EXISTS (
+          SELECT 1
+          FROM integrantes_compromissos AS i
+          INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+          INNER JOIN usuarios AS u ON i0.usuario_id = u.usuario_id
+          WHERE c.compromisso_financeiro_id = i.compromisso_id AND u.token = @__usuarioToken_0) AND c.deleted_at IS NULL
+      ORDER BY c.compromisso_financeiro_id, g.grupo_id, t.integrante_compromisso_id, t.integrante_id0, t.usuario_id
+  Failed TribeWallet.Tests.TribeWalletAllRoutesTests.T19_Post_CompromissoIntegrantes [6 ms]
+  Error Message:
+   POST /api/compromissos/{compromissoToken}/integrantes failed with 404 (NotFound). Body: 
+  Stack Trace:
+     at TribeWallet.Tests.TribeWalletAllRoutesTests.AssertSuccessAsync(HttpResponseMessage res, String routeLabel) in /home/lfscruz/Documents/csharp/TribeWallet/Tests/TribeWalletAllRoutesTests.cs:line 480
+   at TribeWallet.Tests.TribeWalletAllRoutesTests.T19_Post_CompromissoIntegrantes() in /home/lfscruz/Documents/csharp/TribeWallet/Tests/TribeWalletAllRoutesTests.cs:line 316
+--- End of stack trace from previous location ---
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T20_Put_Compromisso [1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T21_Post_Pagamento [< 1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T22_Put_Pagamento [< 1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T23_Get_UsuarioDashboard [20 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T24_Get_RelatorioUsuario [14 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T25_Get_RelatorioUsuarioPdf [150 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T26_Get_RelatorioUsuarioGrupo [10 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T27_Get_RelatorioUsuarioGrupoPdf [16 ms]
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__integranteToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE i.token = @__integranteToken_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__integranteToken_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_compromisso_id, i.compromisso_id, i.created_at, i.deleted_at, i.integrante_id, i.token, i.updated_at, i.valor_devedor, i.valor_pago
+      FROM integrantes_compromissos AS i
+      INNER JOIN integrantes AS i0 ON i.integrante_id = i0.integrante_id
+      WHERE i0.token = @__integranteToken_0 AND i.deleted_at IS NULL
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p5='?' (DbType = Guid), @p0='?' (DbType = DateTime), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      UPDATE integrantes SET deleted_at = @p0, grupo_id = @p1, token = @p2, updated_at = @p3, usuario_id = @p4
+      WHERE integrante_id = @p5;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id, g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at, u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM integrantes AS i
+      INNER JOIN grupos AS g ON i.grupo_id = g.grupo_id
+      INNER JOIN usuarios AS u ON i.usuario_id = u.usuario_id
+      WHERE g.token = @__token_0 AND i.deleted_at IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.grupo_id, t.created_at, t.deleted_at, t.descricao, t.nome, t.token, t.updated_at, c.compromisso_financeiro_id, c.categoria, c.created_at, c.data, c.deleted_at, c.grupo_id, c.imagem, c.tipo_divisao, c.titulo, c.token, c.updated_at, c.valor_total, i.integrante_id, i.created_at, i.deleted_at, i.grupo_id, i.token, i.updated_at, i.usuario_id
+      FROM (
+          SELECT g.grupo_id, g.created_at, g.deleted_at, g.descricao, g.nome, g.token, g.updated_at
+          FROM grupos AS g
+          WHERE g.token = @__token_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN compromissos_financeiros AS c ON t.grupo_id = c.grupo_id
+      LEFT JOIN integrantes AS i ON t.grupo_id = i.grupo_id
+      ORDER BY t.grupo_id, c.compromisso_financeiro_id
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@p10='?' (DbType = Guid), @p0='?', @p1='?' (DbType = DateTime), @p2='?' (DbType = DateTime), @p3='?' (DbType = Guid), @p4='?', @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?' (DbType = DateTime), @p9='?' (DbType = Decimal), @p16='?' (DbType = Guid), @p11='?' (DbType = DateTime), @p12='?', @p13='?', @p14='?', @p15='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      UPDATE compromissos_financeiros SET categoria = @p0, data = @p1, deleted_at = @p2, grupo_id = @p3, imagem = @p4, tipo_divisao = @p5, titulo = @p6, token = @p7, updated_at = @p8, valor_total = @p9
+      WHERE compromisso_financeiro_id = @p10;
+      UPDATE grupos SET deleted_at = @p11, descricao = @p12, nome = @p13, token = @p14, updated_at = @p15
+      WHERE grupo_id = @p16;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__token_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u.usuario_id, u.created_at, u.deleted_at, u.email, u.hash_senha, u.imagem, u.nome, u.sobrenome, u.token, u.updated_at, u.username
+      FROM usuarios AS u
+      WHERE u.token = @__token_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[@p9='?' (DbType = Guid), @p0='?' (DbType = DateTime), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = DateTime), @p8='?'], CommandType='Text', CommandTimeout='30']
+      UPDATE usuarios SET deleted_at = @p0, email = @p1, hash_senha = @p2, imagem = @p3, nome = @p4, sobrenome = @p5, token = @p6, updated_at = @p7, username = @p8
+      WHERE usuario_id = @p9;
+[xUnit.net 00:00:03.38]   Finished:    TribeWallet.Tests
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T28_Delete_Pagamento [< 1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T29_Delete_CompromissoIntegrante [< 1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T30_Delete_Compromisso [< 1 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T31_Delete_GrupoIntegrante [28 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T32_Delete_Grupo [22 ms]
+  Passed TribeWallet.Tests.TribeWalletAllRoutesTests.T33_Delete_Usuario [9 ms]
+
+Test Run Failed.
+Total tests: 33
+     Passed: 32
+     Failed: 1
+ Total time: 3.6976 Seconds
