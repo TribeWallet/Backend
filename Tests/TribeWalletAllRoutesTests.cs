@@ -54,7 +54,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             username = $"user1_{RunId}",
             senha = Password
         });
-        AssertSuccessAsync(res1, "POST /api/auth/register (primary)");
+        await AssertSuccessAsync(res1, "POST /api/auth/register (primary)");
 
         var res2 = await _client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -64,7 +64,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             username = $"user2_{RunId}",
             senha = Password
         });
-        AssertSuccessAsync(res2, "POST /api/auth/register (secondary)");
+        await AssertSuccessAsync(res2, "POST /api/auth/register (secondary)");
     }
 
     [Fact, TestPriority(2)]
@@ -75,7 +75,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             email = PrimaryEmail,
             senha = Password
         });
-        AssertSuccessAsync(res, "POST /api/auth/login");
+        await AssertSuccessAsync(res, "POST /api/auth/login");
 
         var rawBody = await res.Content.ReadAsStringAsync();
         var json = JsonDocument.Parse(rawBody).RootElement;
@@ -93,7 +93,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             email = SecondaryEmail,
             novaSenha = "NewPassword@123"
         });
-        AssertSuccessAsync(res, "POST /api/auth/forgot-password");
+        await AssertSuccessAsync(res, "POST /api/auth/forgot-password");
     }
 
     // ==================== 2. USUARIOS ====================
@@ -102,7 +102,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T04_Get_Usuarios()
     {
         var res = await _client.GetAsync("/api/usuarios?deleted=false");
-        AssertSuccessAsync(res, "GET /api/usuarios");
+        await AssertSuccessAsync(res, "GET /api/usuarios");
 
         var json = await res.Content.ReadFromJsonAsync<JsonElement>();
         if (json.ValueKind == JsonValueKind.Array)
@@ -122,7 +122,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T05_Get_UsuarioByNome()
     {
         var res = await _client.GetAsync("/api/usuarios/Teste");
-        AssertSuccessAsync(res, "GET /api/usuarios/{nome}");
+        await AssertSuccessAsync(res, "GET /api/usuarios/{nome}");
     }
 
     [Fact, TestPriority(6)]
@@ -134,7 +134,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
         form.Add(new StringContent($"user1_{RunId}"), "Username");
 
         var res = await _client.PutAsync($"/api/usuarios/{_usuarioToken}", form);
-        AssertSuccessAsync(res, "PUT /api/usuarios/{usuarioToken}");
+        await AssertSuccessAsync(res, "PUT /api/usuarios/{usuarioToken}");
     }
 
     // ==================== 3. GRUPOS & CONVITES ====================
@@ -170,7 +170,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T08_Get_GruposByUsuario()
     {
         var res = await _client.GetAsync($"/api/grupos/usuario/{_usuarioToken}?deleted=false");
-        AssertSuccessAsync(res, "GET /api/grupos/usuario/{usuarioToken}");
+        await AssertSuccessAsync(res, "GET /api/grupos/usuario/{usuarioToken}");
 
         if (string.IsNullOrEmpty(_grupoToken))
         {
@@ -184,7 +184,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T09_Get_GrupoByToken()
     {
         var res = await _client.GetAsync($"/api/grupos/{_grupoToken}?deleted=false");
-        AssertSuccessAsync(res, "GET /api/grupos/{grupoToken}");
+        await AssertSuccessAsync(res, "GET /api/grupos/{grupoToken}");
 
         var json = await res.Content.ReadFromJsonAsync<JsonElement>();
         _integranteToken = ExtractToken(json, "integranteToken");
@@ -198,18 +198,22 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             nome = $"ViagemAtualizada_{RunId}",
             descricao = "Descricao atualizada"
         });
-        AssertSuccessAsync(res, "PUT /api/grupos/{grupoToken}");
+        await AssertSuccessAsync(res, "PUT /api/grupos/{grupoToken}");
     }
 
     [Fact, TestPriority(11)]
     public async Task T11_Put_GrupoIntegrantes()
     {
-        var body = string.IsNullOrEmpty(_secondaryUsuarioToken)
-            ? Array.Empty<object>()
-            : new object[] { new { usuarioToken = _secondaryUsuarioToken } };
+        var novo = await _client.PostAsJsonAsync("/api/auth/register", new
+        {
+            nome = "Teste", sobrenome = "Tres", email = $"user3_{RunId}@test.com",
+            username = $"user3_{RunId}", senha = Password
+        });
+        await AssertSuccessAsync(novo, "POST /api/auth/register (third)");
+        var terceiro = (await novo.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("usuarioToken").GetString();
 
-        var res = await _client.PutAsJsonAsync($"/api/grupos/{_grupoToken}/integrantes", body);
-        AssertSuccessAsync(res, "PUT /api/grupos/{grupoToken}/integrantes");
+        var res = await _client.PutAsJsonAsync($"/api/grupos/{_grupoToken}/integrantes", new[] { new { usuarioToken = terceiro } });
+        await AssertSuccessAsync(res, "PUT /api/grupos/{grupoToken}/integrantes");
     }
 
     [Fact, TestPriority(12)]
@@ -217,8 +221,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     {
         var payload = new
         {
-            usuarioToken = _secondaryUsuarioToken,
-            email = SecondaryEmail
+            usuarioToken = _secondaryUsuarioToken
         };
 
         var res = await _client.PostAsJsonAsync($"/api/grupos/{_grupoToken}/convites", payload);
@@ -241,17 +244,17 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     [Fact, TestPriority(13)]
     public async Task T13_Get_Convite()
     {
-        if (string.IsNullOrEmpty(_conviteToken)) return;
+        Assert.False(string.IsNullOrEmpty(_conviteToken), "Pré-condição ausente: _conviteToken não foi obtido nos testes anteriores.");
         var res = await _client.GetAsync($"/api/convites/{_conviteToken}");
-        AssertSuccessAsync(res, "GET /api/convites/{conviteToken}");
+        await AssertSuccessAsync(res, "GET /api/convites/{conviteToken}");
     }
 
     [Fact, TestPriority(14)]
     public async Task T14_Post_AceitarConvite()
     {
-        if (string.IsNullOrEmpty(_conviteToken)) return;
+        Assert.False(string.IsNullOrEmpty(_conviteToken), "Pré-condição ausente: _conviteToken não foi obtido nos testes anteriores.");
         var res = await _client.PostAsync($"/api/convites/{_conviteToken}/aceitar", null);
-        AssertSuccessAsync(res, "POST /api/convites/{conviteToken}/aceitar");
+        await AssertSuccessAsync(res, "POST /api/convites/{conviteToken}/aceitar");
     }
 
     // ==================== 4. COMPROMISSOS ====================
@@ -291,7 +294,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T16_Get_CompromissosByGrupo()
     {
         var res = await _client.GetAsync($"/api/compromissos/{_grupoToken}?deleted=false");
-        AssertSuccessAsync(res, "GET /api/compromissos/{grupoToken}");
+        await AssertSuccessAsync(res, "GET /api/compromissos/{grupoToken}");
 
         var json = await res.Content.ReadFromJsonAsync<JsonElement>();
         if (string.IsNullOrEmpty(_compromissoToken))
@@ -304,15 +307,15 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T17_Get_CompromissosByUsuario()
     {
         var res = await _client.GetAsync($"/api/compromissos/usuario/{_usuarioToken}?deleted=false");
-        AssertSuccessAsync(res, "GET /api/compromissos/usuario/{usuarioToken}");
+        await AssertSuccessAsync(res, "GET /api/compromissos/usuario/{usuarioToken}");
     }
 
     [Fact, TestPriority(18)]
     public async Task T18_Get_CompromissosByIntegrante()
     {
-        if (string.IsNullOrEmpty(_integranteToken)) return;
+        Assert.False(string.IsNullOrEmpty(_integranteToken), "Pré-condição ausente: _integranteToken não foi obtido nos testes anteriores.");
         var res = await _client.GetAsync($"/api/compromissos/integrantes/{_integranteToken}");
-        AssertSuccessAsync(res, "GET /api/compromissos/integrantes/{integranteToken}");
+        await AssertSuccessAsync(res, "GET /api/compromissos/integrantes/{integranteToken}");
     }
 
     [Fact, TestPriority(19)]
@@ -326,7 +329,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
             {
                 integranteToken = _integranteToken,
                 usuarioToken = _secondaryUsuarioToken,
-                valor = 50.00m
+                valorDevedor = 50.00m
             }
         };
 
@@ -337,7 +340,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
         if (body.StartsWith("{") || body.StartsWith("["))
         {
             using var doc = JsonDocument.Parse(body);
-            var extracted = ExtractToken(doc.RootElement, "integranteCompromissoToken", "integranteToken", "token", "id");
+            var extracted = ExtractToken(doc.RootElement, "integranteCompromissoToken");
             if (!string.IsNullOrWhiteSpace(extracted))
             {
                 _integranteCompromissoToken = extracted;
@@ -360,7 +363,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
         form.Add(new StringContent("Lazer"), "Categoria");
 
         var res = await _client.PutAsync($"/api/compromissos/{_compromissoToken}", form);
-        AssertSuccessAsync(res, "PUT /api/compromissos/{compromissoToken}");
+        await AssertSuccessAsync(res, "PUT /api/compromissos/{compromissoToken}");
     }
 
     // ==================== 5. PAGAMENTOS ====================
@@ -368,7 +371,7 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     [Fact, TestPriority(21)]
     public async Task T21_Post_Pagamento()
     {
-        if (string.IsNullOrEmpty(_integranteCompromissoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_integranteCompromissoToken), "Pré-condição ausente: _integranteCompromissoToken não foi obtido nos testes anteriores.");
 
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(_integranteCompromissoToken), "IntegranteCompromissoToken");
@@ -376,8 +379,12 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
         form.Add(new StringContent(DateTime.UtcNow.ToString("O")), "Data");
         form.Add(new StringContent("1"), "Metodo");
 
+        var arquivo = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        arquivo.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(arquivo, "Comprovante", "comprovante.png");
+
         var res = await _client.PostAsync("/api/Pagamento", form);
-        AssertSuccessAsync(res, "POST /api/Pagamento");
+        await AssertSuccessAsync(res, "POST /api/Pagamento");
 
         var json = await res.Content.ReadFromJsonAsync<JsonElement>();
         _pagamentoToken = ExtractToken(json, "pagamentoToken", "token");
@@ -386,15 +393,19 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     [Fact, TestPriority(22)]
     public async Task T22_Put_Pagamento()
     {
-        if (string.IsNullOrEmpty(_pagamentoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_pagamentoToken), "Pré-condição ausente: _pagamentoToken não foi obtido nos testes anteriores.");
 
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent("75.00"), "Valor");
         form.Add(new StringContent(DateTime.UtcNow.ToString("O")), "Data");
         form.Add(new StringContent("2"), "Metodo");
 
+        var arquivo = new ByteArrayContent(new byte[] { 1, 2, 3 });
+        arquivo.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        form.Add(arquivo, "Comprovante", "comprovante.png");
+
         var res = await _client.PutAsync($"/api/Pagamento/{_pagamentoToken}", form);
-        AssertSuccessAsync(res, "PUT /api/Pagamento/{token}");
+        await AssertSuccessAsync(res, "PUT /api/Pagamento/{token}");
     }
 
     // ==================== 6. RELATORIOS & DASHBOARD ====================
@@ -403,21 +414,21 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T23_Get_UsuarioDashboard()
     {
         var res = await _client.GetAsync($"/api/usuarios/{_usuarioToken}/dashboard");
-        AssertSuccessAsync(res, "GET /api/usuarios/{usuarioToken}/dashboard");
+        await AssertSuccessAsync(res, "GET /api/usuarios/{usuarioToken}/dashboard");
     }
 
     [Fact, TestPriority(24)]
     public async Task T24_Get_RelatorioUsuario()
     {
         var res = await _client.GetAsync($"/api/relatorios/usuario/{_usuarioToken}");
-        AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}");
+        await AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}");
     }
 
     [Fact, TestPriority(25)]
     public async Task T25_Get_RelatorioUsuarioPdf()
     {
         var res = await _client.GetAsync($"/api/relatorios/usuario/{_usuarioToken}/pdf");
-        AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/pdf");
+        await AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/pdf");
         var bytes = await res.Content.ReadAsByteArrayAsync();
         Assert.NotEmpty(bytes);
     }
@@ -426,14 +437,14 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     public async Task T26_Get_RelatorioUsuarioGrupo()
     {
         var res = await _client.GetAsync($"/api/relatorios/usuario/{_usuarioToken}/grupo/{_grupoToken}");
-        AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/grupo/{grupoToken}");
+        await AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/grupo/{grupoToken}");
     }
 
     [Fact, TestPriority(27)]
     public async Task T27_Get_RelatorioUsuarioGrupoPdf()
     {
         var res = await _client.GetAsync($"/api/relatorios/usuario/{_usuarioToken}/grupo/{_grupoToken}/pdf");
-        AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/grupo/{grupoToken}/pdf");
+        await AssertSuccessAsync(res, "GET /api/relatorios/usuario/{usuarioToken}/grupo/{grupoToken}/pdf");
         var bytes = await res.Content.ReadAsByteArrayAsync();
         Assert.NotEmpty(bytes);
     }
@@ -443,49 +454,49 @@ public class TribeWalletAllRoutesTests : IClassFixture<WebApplicationFactory<Pro
     [Fact, TestPriority(28)]
     public async Task T28_Delete_Pagamento()
     {
-        if (string.IsNullOrEmpty(_pagamentoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_pagamentoToken), "Pré-condição ausente: _pagamentoToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/Pagamento/{_pagamentoToken}");
-        AssertSuccessAsync(res, "DELETE /api/Pagamento/{token}");
+        await AssertSuccessAsync(res, "DELETE /api/Pagamento/{token}");
     }
 
     [Fact, TestPriority(29)]
     public async Task T29_Delete_CompromissoIntegrante()
     {
-        if (string.IsNullOrEmpty(_integranteCompromissoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_integranteCompromissoToken), "Pré-condição ausente: _integranteCompromissoToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/compromissos/integrantes/{_integranteCompromissoToken}");
-        AssertSuccessAsync(res, "DELETE /api/compromissos/integrantes/{integranteCompromissoToken}");
+        await AssertSuccessAsync(res, "DELETE /api/compromissos/integrantes/{integranteCompromissoToken}");
     }
 
     [Fact, TestPriority(30)]
     public async Task T30_Delete_Compromisso()
     {
-        if (string.IsNullOrEmpty(_compromissoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_compromissoToken), "Pré-condição ausente: _compromissoToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/compromissos/{_compromissoToken}");
-        AssertSuccessAsync(res, "DELETE /api/compromissos/{compromissoToken}");
+        await AssertSuccessAsync(res, "DELETE /api/compromissos/{compromissoToken}");
     }
 
     [Fact, TestPriority(31)]
     public async Task T31_Delete_GrupoIntegrante()
     {
-        if (string.IsNullOrEmpty(_integranteToken)) return;
+        Assert.False(string.IsNullOrEmpty(_integranteToken), "Pré-condição ausente: _integranteToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/grupos/{_grupoToken}/integrantes/{_integranteToken}");
-        AssertSuccessAsync(res, "DELETE /api/grupos/{grupoToken}/integrantes/{integranteToken}");
+        await AssertSuccessAsync(res, "DELETE /api/grupos/{grupoToken}/integrantes/{integranteToken}");
     }
 
     [Fact, TestPriority(32)]
     public async Task T32_Delete_Grupo()
     {
-        if (string.IsNullOrEmpty(_grupoToken)) return;
+        Assert.False(string.IsNullOrEmpty(_grupoToken), "Pré-condição ausente: _grupoToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/grupos/{_grupoToken}");
-        AssertSuccessAsync(res, "DELETE /api/grupos/{grupoToken}");
+        await AssertSuccessAsync(res, "DELETE /api/grupos/{grupoToken}");
     }
 
     [Fact, TestPriority(33)]
     public async Task T33_Delete_Usuario()
     {
-        if (string.IsNullOrEmpty(_usuarioToken)) return;
+        Assert.False(string.IsNullOrEmpty(_usuarioToken), "Pré-condição ausente: _usuarioToken não foi obtido nos testes anteriores.");
         var res = await _client.DeleteAsync($"/api/usuarios/{_usuarioToken}");
-        AssertSuccessAsync(res, "DELETE /api/usuarios/{usuarioToken}");
+        await AssertSuccessAsync(res, "DELETE /api/usuarios/{usuarioToken}");
     }
 
     // ==================== HELPERS ====================
